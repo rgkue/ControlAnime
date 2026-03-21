@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Lista · ControlAnime</title>
+<link rel="icon" type="image/x-icon" href="/static/logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
+
+:root {
+    --bg:        #0f0f0f;
+    --bg2:       #161616;
+    --bg3:       #1e1e1e;
+    --border:    #2a2a2a;
+    --accent:    #f97316;
+    --accent-d:  #c95e0a;
+    --text:      #e5e5e5;
+    --muted:     #777;
+    --success:   #22c55e;
+    --danger:    #ef4444;
+    --radius:    10px;
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', system-ui, sans-serif;
+    min-height: 100vh;
+}
+
+/* ── NAV ── */
+.top-nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(15,15,15,.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 56px;
+    display: flex; align-items: center; gap: 12px;
+}
+.brand { font-family: 'Bebas Neue', sans-serif; font-weight: 400; font-size: 1.2rem; letter-spacing: .12em; text-transform: uppercase; text-decoration: none; color: var(--text) }
+.brand span { color: var(--accent) }
+.nav-sep { color: var(--border); font-size: 1.2rem; margin: 0 4px }
+.nav-crumb { color: var(--muted); font-size: .85rem; text-decoration: none }
+.nav-crumb:hover { color: var(--text) }
+.nav-crumb.active { color: var(--text) }
+
+/* ── HERO ── */
+.hero {
+    position: relative; height: 220px; overflow: hidden;
+}
+.hero-cover {
+    position: absolute; inset: 0;
+    background-size: cover; background-position: center 20%;
+    filter: brightness(.35) saturate(.8);
+}
+.hero-gradient {
+    position: absolute; inset: 0;
+    background: linear-gradient(to bottom, transparent 30%, var(--bg) 100%);
+}
+.hero-content {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 0 32px 24px;
+    display: flex; align-items: flex-end; gap: 20px;
+}
+.hero-poster {
+    width: 90px; height: 128px; border-radius: 8px;
+    object-fit: cover; box-shadow: 0 8px 32px rgba(0,0,0,.6);
+    flex-shrink: 0; border: 2px solid rgba(255,255,255,.08);
+    background: var(--bg3);
+}
+.hero-info { flex: 1; min-width: 0 }
+.hero-titulo {
+    font-size: 1.6rem; font-weight: 800; line-height: 1.2;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    margin-bottom: 6px;
+}
+.hero-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap }
+.hero-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: .78rem; font-weight: 600; padding: 3px 10px;
+    border-radius: 20px; border: 1px solid var(--border);
+    background: rgba(255,255,255,.06); color: var(--muted);
+}
+.hero-badge.rating { color: #fbbf24; border-color: rgba(251,191,36,.3); background: rgba(251,191,36,.08) }
+.hero-badge.eps    { color: var(--text) }
+.hero-badge.estado { text-transform: capitalize }
+
+/* ── LAYOUT ── */
+.page { max-width: 780px; margin: 0 auto; padding: 28px 24px 60px }
+
+/* ── CARDS ── */
+.card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px; margin-bottom: 16px;
+}
+.card-title {
+    font-size: .7rem; font-weight: 700; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 20px;
+    display: flex; align-items: center; gap: 8px;
+}
+.card-title::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+}
+
+/* ── ESTADO ── */
+.estado-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+}
+.estado-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    padding: 14px 10px; border-radius: 8px; border: 1.5px solid var(--border);
+    background: transparent; cursor: pointer; color: var(--muted);
+    font-size: .82rem; font-weight: 600; transition: all .15s;
+}
+.estado-btn .icon { font-size: 1.3rem }
+.estado-btn:hover { border-color: var(--accent); color: var(--text); background: rgba(249,115,22,.06) }
+.estado-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(249,115,22,.1) }
+.estado-btn.active-like    { border-color: #ec4899; color: #ec4899; background: rgba(236,72,153,.1) }
+.estado-btn.active-abandon { border-color: #ef4444; color: #ef4444; background: rgba(239,68,68,.1) }
+
+/* ── PROGRESO ── */
+.progreso-wrap { display: flex; flex-direction: column; gap: 14px }
+.progreso-header { display: flex; justify-content: space-between; align-items: center }
+.progreso-label { font-size: .9rem; color: var(--muted) }
+.progreso-valor { font-size: 1.1rem; font-weight: 700; color: var(--accent) }
+.progreso-total { font-size: .85rem; color: var(--muted); font-weight: 400 }
+.slider-wrap { position: relative }
+.slider {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 6px; border-radius: 3px; outline: none; cursor: pointer;
+    background: var(--border);
+}
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--accent); cursor: pointer;
+    box-shadow: 0 0 0 3px rgba(249,115,22,.2);
+    transition: box-shadow .15s;
+}
+.slider::-webkit-slider-thumb:hover { box-shadow: 0 0 0 5px rgba(249,115,22,.3) }
+.slider::-moz-range-thumb {
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--accent); cursor: pointer; border: none;
+}
+.eps-inputs { display: flex; align-items: center; gap: 12px; margin-top: 4px }
+.eps-input-wrap {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 14px;
+    font-size: .9rem; color: var(--muted);
+}
+.eps-input {
+    background: none; border: none; outline: none;
+    color: var(--text); font-size: .95rem; font-weight: 600;
+    width: 48px; text-align: center;
+}
+.eps-input::-webkit-outer-spin-button,
+.eps-input::-webkit-inner-spin-button { -webkit-appearance: none }
+.btn-eps {
+    width: 28px; height: 28px; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--bg3);
+    color: var(--text); cursor: pointer; font-size: 1rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .1s;
+}
+.btn-eps:hover { border-color: var(--accent); color: var(--accent) }
+
+/* ── FECHAS ── */
+.fechas-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px }
+@media (max-width: 560px) { .fechas-grid { grid-template-columns: 1fr 1fr } }
+.fecha-field { display: flex; flex-direction: column; gap: 6px }
+.fecha-label { font-size: .75rem; color: var(--muted); font-weight: 600; letter-spacing: .04em }
+.fecha-input {
+    background: var(--bg3); border: 1px solid var(--border);
+    color: var(--text); border-radius: 8px; padding: 9px 12px;
+    font-size: .88rem; outline: none; width: 100%;
+    transition: border-color .15s; font-family: inherit;
+}
+.fecha-input:focus { border-color: var(--accent) }
+.fecha-input::-webkit-calendar-picker-indicator { filter: invert(.5) }
+.fecha-clear {
+    background: none; border: none; color: var(--muted);
+    cursor: pointer; font-size: .75rem; text-align: left;
+    padding: 0; transition: color .15s;
+}
+.fecha-clear:hover { color: var(--danger) }
+
+/* ── RESEÑA ── */
+.resena-wrap { display: flex; flex-direction: column; gap: 14px }
+.rating-stars { display: flex; gap: 6px }
+.star {
+    font-size: 1.4rem; cursor: pointer; color: var(--border);
+    transition: color .1s, transform .1s;
+    background: none; border: none; padding: 0;
+}
+.star:hover, .star.active { color: #fbbf24; transform: scale(1.15) }
+.resena-texto {
+    background: var(--bg3); border: 1px solid var(--border);
+    color: var(--text); border-radius: 8px; padding: 12px 14px;
+    font-size: .9rem; font-family: inherit; resize: vertical;
+    min-height: 90px; outline: none; transition: border-color .15s;
+    line-height: 1.6;
+}
+.resena-texto:focus { border-color: var(--accent) }
+.resena-meta { font-size: .75rem; color: var(--muted) }
+
+/* ── ACCIONES ── */
+.acciones {
+    display: flex; gap: 12px; flex-wrap: wrap;
+    position: sticky; bottom: 0; z-index: 10;
+    background: linear-gradient(to top, var(--bg) 80%, transparent);
+    padding: 16px 0 0; margin-top: 8px;
+}
+.btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 11px 22px; border-radius: 8px;
+    font-size: .88rem; font-weight: 700; cursor: pointer;
+    border: none; transition: all .15s; text-decoration: none;
+}
+.btn-primary { background: var(--accent); color: #000 }
+.btn-primary:hover { background: var(--accent-d) }
+.btn-secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border) }
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent) }
+.btn-danger { background: rgba(239,68,68,.1); color: var(--danger); border: 1px solid rgba(239,68,68,.3) }
+.btn-danger:hover { background: rgba(239,68,68,.2) }
+.btn:disabled { opacity: .5; cursor: not-allowed }
+
+/* ── TOAST ── */
+.toast {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 20px;
+    font-size: .88rem; font-weight: 600; opacity: 0;
+    transition: all .25s; z-index: 999; white-space: nowrap;
+    box-shadow: 0 8px 32px rgba(0,0,0,.4);
+    pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0) }
+.toast.ok   { border-color: var(--success); color: var(--success) }
+.toast.err  { border-color: var(--danger);  color: var(--danger) }
+
+/* ── ESTADO VACÍO / LOADING ── */
+.loader {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 300px; color: var(--muted); font-size: .9rem;
+    flex-direction: column; gap: 14px;
+}
+.spinner {
+    width: 32px; height: 32px; border: 3px solid var(--border);
+    border-top-color: var(--accent); border-radius: 50%;
+    animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg) } }
+.not-in-list {
+    text-align: center; padding: 40px 20px; color: var(--muted);
+}
+.not-in-list .icon { font-size: 2.5rem; margin-bottom: 12px }
+.not-in-list p { font-size: 1rem; color: var(--text); margin-bottom: 6px }
+.not-in-list span { font-size: .85rem }
+
+/* ── LINK FICHA ── */
+.ficha-link {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; background: var(--bg3);
+    border: 1px solid var(--border); border-radius: 8px;
+    text-decoration: none; color: var(--text); transition: all .15s;
+    font-size: .88rem;
+}
+.ficha-link:hover { border-color: var(--accent); color: var(--accent) }
+.ficha-link-label { color: var(--muted); font-size: .78rem; display: block; margin-bottom: 2px }
+/* ── MODAL ── */
+.modal-overlay {
+    position: fixed; inset: 0; z-index: 500;
+    background: rgba(0,0,0,.7); backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all }
+.modal {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 14px; padding: 32px 28px; max-width: 360px; width: 90%;
+    text-align: center; transform: scale(.95); transition: transform .2s;
+}
+.modal-overlay.open .modal { transform: scale(1) }
+.modal-icon { font-size: 2.2rem; margin-bottom: 12px }
+.modal-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px }
+.modal-desc { font-size: .87rem; color: var(--muted); margin-bottom: 24px; line-height: 1.5 }
+.modal-btns { display: flex; gap: 10px; justify-content: center }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="top-nav">
+    <a class="brand" href="/dashboard"><span>CONTROL</span>ANIME</a>
+    <span class="nav-sep">/</span>
+    <a class="nav-crumb" href="/mi-lista">Mi Lista</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-crumb active" id="navTitulo">Cargando…</span>
+</nav>
+
+<!-- HERO -->
+<div class="hero" id="hero">
+    <div class="hero-cover" id="heroCover"></div>
+    <div class="hero-gradient"></div>
+    <div class="hero-content">
+        <img class="hero-poster" id="heroPoster" src="" alt="">
+        <div class="hero-info">
+            <div class="hero-titulo" id="heroTitulo">—</div>
+            <div class="hero-meta" id="heroMeta"></div>
+        </div>
+    </div>
+</div>
+
+<!-- MAIN -->
+<main class="page" id="mainPage">
+    <div class="loader"><div class="spinner"></div><span>Cargando datos…</span></div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<!-- Modal confirmación -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+        <div class="modal-icon">🗑</div>
+        <div class="modal-title" id="modalTitle">¿Quitar de tu lista?</div>
+        <div class="modal-desc" id="modalDesc"></div>
+        <div class="modal-btns">
+            <button class="btn btn-danger" id="modalConfirm">Sí, quitar</button>
+            <button class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ── Estado ────────────────────────────────────────────────────────────────────
+const animeId = location.pathname.replace(/\/$/, '').split('/').at(-1)
+let data = null          // respuesta completa del backend
+let dirty = false        // hay cambios sin guardar
+let resenaRating = 0
+let guardando = false
+
+// ── CSRF — lee la cookie csrf_token (no HttpOnly) ────────────────────────────
+function csrf() {
+    const match = document.cookie.match(/(?:^|;\s*)csrf_token=([^;]+)/)
+    return match ? { 'X-CSRF-Token': decodeURIComponent(match[1]) } : {}
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+let toastTimer = null
+function toast(msg, tipo = 'ok') {
+    const el = document.getElementById('toast')
+    el.textContent = msg
+    el.className = `toast show ${tipo}`
+    clearTimeout(toastTimer)
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2800)
+}
+
+// ── Fetch inicial ─────────────────────────────────────────────────────────────
+async function cargar() {
+    try {
+        const res = await fetch(`/lista/detalle/${animeId}`)
+        if (res.status === 401) { location.href = '/login'; return }
+        if (!res.ok) throw new Error(res.status)
+        data = await res.json()
+        renderHero()
+        renderMain()
+    } catch (e) {
+        document.getElementById('mainPage').innerHTML =
+            `<div class="loader"><span style="color:var(--danger)">Error al cargar. <a href="/dashboard/mi-lista" style="color:var(--accent)">Volver</a></span></div>`
+    }
+}
+
+// ── Hero ──────────────────────────────────────────────────────────────────────
+function renderHero() {
+    const a = data.anime
+    document.title = `${a.titulo} · Mi Lista · ControlAnime`
+    document.getElementById('navTitulo').textContent = a.titulo
+    document.getElementById('heroPoster').src = a.poster_url || ''
+    document.getElementById('heroPoster').alt = a.titulo
+    if (a.cover_url) document.getElementById('heroCover').style.backgroundImage = `url('${a.cover_url}')`
+    document.getElementById('heroTitulo').textContent = a.titulo
+
+    const meta = document.getElementById('heroMeta')
+    const badges = []
+    if (a.rating)    badges.push(`<span class="hero-badge rating">★ ${a.rating}</span>`)
+    if (a.episodios) badges.push(`<span class="hero-badge eps">${a.episodios} eps</span>`)
+    if (a.estado)    badges.push(`<span class="hero-badge estado">${a.estado}</span>`)
+    if (data.entrada?.agregado_en)
+        badges.push(`<span class="hero-badge">📅 Agregado ${fmtFecha(data.entrada.agregado_en)}</span>`)
+    meta.innerHTML = badges.join('')
+}
+
+// ── Main ──────────────────────────────────────────────────────────────────────
+function renderMain() {
+    const page = document.getElementById('mainPage')
+    const e = data.entrada
+    const a = data.anime
+
+    if (!e) {
+        page.innerHTML = `
+        <div class="not-in-list">
+            <div class="icon">📋</div>
+            <p>Este anime no está en tu lista</p>
+            <span>Agrégalo desde su ficha</span>
+        </div>
+        <div style="margin-top:20px">
+            <a href="/dashboard/anime/${animeId}" class="ficha-link">
+                <div><span class="ficha-link-label">Ver ficha completa</span>${esc(a.titulo)}</div>
+                <span>→</span>
+            </a>
+        </div>`
+        return
+    }
+
+    const eps    = a.episodios || 0
+    const vistos = parseInt(e.episodios_vistos) || 0
+    const tipo   = e.tipo || ''
+    const like   = data.like || false
+    const resena = data.resena
+
+    page.innerHTML = `
+
+    <!-- ESTADO -->
+    <div class="card">
+        <div class="card-title">Estado en mi lista</div>
+        <div class="estado-grid">
+            <button class="estado-btn ${tipo==='visto'?'active':''}" data-tipo="visto" id="btnVisto">
+                <span class="icon">✓</span>Visto
+            </button>
+            <button class="estado-btn ${tipo==='pendiente'?'active':''}" data-tipo="pendiente" id="btnPendiente">
+                <span class="icon">⏳</span>Pendiente
+            </button>
+            <button class="estado-btn ${like?'active-like':''}" id="btnLike">
+                <span class="icon">${like?'❤️':'🤍'}</span>Me gusta
+            </button>
+        </div>
+        ${tipo === 'pendiente' || tipo === 'abandonado' ? `
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+            <button class="estado-btn ${tipo==='abandonado'?'active-abandon':''}" id="btnAbandonar" data-tipo="abandonado"
+                style="width:100%;justify-content:center;gap:8px;${tipo==='abandonado'?'border-color:#ef4444;color:#ef4444;background:rgba(239,68,68,.08)':''}">
+                <span class="icon">🚫</span>${tipo==='abandonado'?'Abandonado':'Marcar como abandonado'}
+            </button>
+        </div>` : ''}
+    </div>
+
+    <!-- PROGRESO -->
+    ${eps > 0 ? `
+    <div class="card">
+        <div class="card-title">Progreso</div>
+        <div class="progreso-wrap">
+            <div class="progreso-header">
+                <span class="progreso-label">Episodios vistos</span>
+                <span class="progreso-valor" id="progresoValor">${vistos}
+                    <span class="progreso-total">/ ${eps}</span>
+                </span>
+            </div>
+            <input type="range" class="slider" id="sliderEps"
+                min="0" max="${eps}" value="${vistos}" step="1">
+            <div class="eps-inputs">
+                <button class="btn-eps" id="btnEpsMinus">−</button>
+                <div class="eps-input-wrap">
+                    <input type="number" class="eps-input" id="epsInput"
+                        min="0" max="${eps}" value="${vistos}">
+                    <span>/ ${eps}</span>
+                </div>
+                <button class="btn-eps" id="btnEpsPlus">+</button>
+            </div>
+        </div>
+    </div>` : ''}
+
+    <!-- FECHAS -->
+    <div class="card">
+        <div class="card-title">Fechas</div>
+        <div class="fechas-grid">
+            <div class="fecha-field">
+                <label class="fecha-label">Inicio</label>
+                <input type="date" class="fecha-input" id="fechaInicio" value="${e.fecha_inicio||''}">
+                <button class="fecha-clear" onclick="limpiarFecha('fechaInicio')">✕ Limpiar</button>
+            </div>
+            <div class="fecha-field">
+                <label class="fecha-label">Fin</label>
+                <input type="date" class="fecha-input" id="fechaFin" value="${e.fecha_fin||''}">
+                <button class="fecha-clear" onclick="limpiarFecha('fechaFin')">✕ Limpiar</button>
+            </div>
+            <div class="fecha-field">
+                <label class="fecha-label">Agregado</label>
+                <input type="date" class="fecha-input" id="fechaAgregado"
+                    value="${e.agregado_en ? e.agregado_en.split('T')[0].split(' ')[0] : ''}">
+                <button class="fecha-clear" onclick="limpiarFecha('fechaAgregado')">✕ Limpiar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- RESEÑA -->
+    <div class="card">
+        <div class="card-title">Mi reseña</div>
+        <div class="resena-wrap">
+            <div>
+                <div class="fecha-label" style="margin-bottom:10px">Puntuación</div>
+                <div class="rating-stars" id="ratingStars">
+                    ${[1,2,3,4,5,6,7,8,9,10].map(n =>
+                        `<button class="star ${resena&&resena.rating>=n?'active':''}" data-v="${n}">★</button>`
+                    ).join('')}
+                </div>
+            </div>
+            <textarea class="resena-texto" id="resenaTxt" placeholder="Escribe tu reseña…" maxlength="2000">${resena?.comentario||''}</textarea>
+            ${resena ? `<div class="resena-meta">Escrita el ${fmtFecha(resena.creado_en)}${resena.editado_en?' · Editada el '+fmtFecha(resena.editado_en):''}</div>` : ''}
+        </div>
+    </div>
+
+    <!-- LINK FICHA -->
+    <a href="/dashboard/anime/${animeId}" class="ficha-link" style="margin-bottom:16px">
+        <div><span class="ficha-link-label">Ver ficha completa</span>${esc(a.titulo)}</div>
+        <span>→</span>
+    </a>
+
+    <!-- ACCIONES -->
+    <div class="acciones">
+        <button class="btn btn-primary" id="btnGuardar" onclick="guardar()">💾 Guardar cambios</button>
+        <button class="btn btn-secondary" onclick="history.back()">← Volver</button>
+        <button class="btn btn-danger" id="btnEliminar" onclick="confirmarEliminar()">🗑 Quitar de lista</button>
+    </div>`
+
+    resenaRating = resena?.rating || 0
+    bindEventos(eps, vistos)
+}
+
+function bindEventos(eps, vistos) {
+    // Estado
+    document.querySelectorAll('.estado-btn[data-tipo]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.estado-btn[data-tipo]').forEach(b => b.classList.remove('active'))
+            btn.classList.add('active')
+            markDirty()
+        })
+    })
+
+    // Like
+    const btnLike = document.getElementById('btnLike')
+    if (btnLike) {
+        btnLike.addEventListener('click', () => {
+            const isLike = btnLike.classList.toggle('active-like')
+            btnLike.querySelector('.icon').textContent = isLike ? '❤️' : '🤍'
+            markDirty()
+        })
+    }
+
+    // Abandonar (solo visible si tipo === 'pendiente' o 'abandonado')
+    const btnAbandonar = document.getElementById('btnAbandonar')
+    if (btnAbandonar) {
+        btnAbandonar.addEventListener('click', () => {
+            const yaAbandonado = btnAbandonar.classList.contains('active-abandon')
+            document.querySelectorAll('.estado-btn[data-tipo]').forEach(b => {
+                b.classList.remove('active', 'active-abandon')
+            })
+            if (yaAbandonado) {
+                // Toggle off: volver a pendiente
+                document.querySelector('.estado-btn[data-tipo="pendiente"]')?.classList.add('active')
+            } else {
+                btnAbandonar.classList.add('active-abandon')
+            }
+            markDirty()
+        })
+    }
+
+    // Slider + input sincronizados
+    const slider  = document.getElementById('sliderEps')
+    const epsInp  = document.getElementById('epsInput')
+    const progrVal= document.getElementById('progresoValor')
+
+    function setEps(v) {
+        v = Math.max(0, Math.min(eps, parseInt(v)||0))
+        if (slider)  { slider.value = v; actualizarSliderFill(slider) }
+        if (epsInp)  epsInp.value = v
+        if (progrVal) progrVal.innerHTML = `${v}<span class="progreso-total"> / ${eps}</span>`
+        markDirty()
+    }
+
+    if (slider) {
+        actualizarSliderFill(slider)
+        slider.addEventListener('input', () => setEps(slider.value))
+    }
+    if (epsInp) epsInp.addEventListener('change', () => setEps(epsInp.value))
+    document.getElementById('btnEpsMinus')?.addEventListener('click', () => setEps((parseInt(epsInp?.value)||0) - 1))
+    document.getElementById('btnEpsPlus')?.addEventListener('click',  () => setEps((parseInt(epsInp?.value)||0) + 1))
+
+    // Estrellas
+    const stars = document.querySelectorAll('.star')
+    stars.forEach(star => {
+        star.addEventListener('mouseenter', () => {
+            const v = parseInt(star.dataset.v)
+            stars.forEach(s => s.classList.toggle('active', parseInt(s.dataset.v) <= v))
+        })
+        star.addEventListener('mouseleave', () => {
+            stars.forEach(s => s.classList.toggle('active', parseInt(s.dataset.v) <= resenaRating))
+        })
+        star.addEventListener('click', () => {
+            resenaRating = parseInt(star.dataset.v)
+            stars.forEach(s => s.classList.toggle('active', parseInt(s.dataset.v) <= resenaRating))
+            markDirty()
+        })
+    })
+
+    // Fechas
+    document.querySelectorAll('.fecha-input').forEach(inp => inp.addEventListener('change', markDirty))
+    document.getElementById('resenaTxt')?.addEventListener('input', markDirty)
+}
+
+function actualizarSliderFill(slider) {
+    const pct = (slider.value / slider.max) * 100
+    slider.style.background = `linear-gradient(to right, var(--accent) ${pct}%, var(--border) ${pct}%)`
+}
+
+function markDirty() { dirty = true }
+
+function limpiarFecha(id) {
+    const el = document.getElementById(id)
+    if (el) { el.value = ''; markDirty() }
+}
+
+// ── Guardar ───────────────────────────────────────────────────────────────────
+async function guardar() {
+    if (guardando) return
+    guardando = true
+    const btn = document.getElementById('btnGuardar')
+    if (btn) btn.disabled = true
+
+    try {
+        // Lee tipo: active (visto/pendiente) o active-abandon (abandonado)
+        const tipoEl = document.querySelector('.estado-btn.active[data-tipo]')
+                    || document.querySelector('.estado-btn.active-abandon[data-tipo]')
+        const tipo = tipoEl?.dataset.tipo
+        const eps     = parseInt(document.getElementById('epsInput')?.value) || 0
+        const fi      = document.getElementById('fechaInicio')?.value   || null
+        const ff      = document.getElementById('fechaFin')?.value      || null
+        const fagr    = document.getElementById('fechaAgregado')?.value  || null
+        const like    = document.getElementById('btnLike')?.classList.contains('active-like')
+        const txtRes  = document.getElementById('resenaTxt')?.value.trim()
+
+        // Guardar entrada de lista
+        const patch = await fetch(`/lista/detalle/${animeId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', ...csrf() },
+            body: JSON.stringify({
+                tipo,
+                episodios_vistos: eps,
+                fecha_inicio:     fi,
+                fecha_fin:        ff,
+                agregado_en:      fagr,
+            })
+        })
+        if (!patch.ok) throw new Error('patch')
+
+        // Like
+        const likeActual = data.like
+        if (like !== likeActual) {
+            await fetch('/anime-likes', {
+                method:  like ? 'POST' : 'DELETE',
+                headers: { 'Content-Type': 'application/json', ...csrf() },
+                body:    JSON.stringify({ anime_id: animeId })
+            })
+            data.like = like
+        }
+
+        // Reseña
+        if (resenaRating > 0 && txtRes) {
+            const metodo = data.resena ? 'PUT' : 'POST'
+            await fetch('/resenas', {
+                method:  metodo,
+                headers: { 'Content-Type': 'application/json', ...csrf() },
+                body:    JSON.stringify({
+                    anime_id:   animeId,
+                    rating:     resenaRating,
+                    comentario: txtRes,
+                    ...(data.resena ? { resena_id: data.resena.id } : {})
+                })
+            })
+        }
+
+        dirty = false
+        toast('✓ Cambios guardados', 'ok')
+        // Notificar a mi-lista para que invalide el caché
+        try { new BroadcastChannel('ca_lista').postMessage({ tipo: 'invalidar' }) } catch(e) {}
+
+    } catch {
+        toast('Error al guardar', 'err')
+    } finally {
+        guardando = false
+        if (btn) btn.disabled = false
+    }
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
+function abrirModal(title, desc, onConfirm) {
+    document.getElementById('modalTitle').textContent = title
+    document.getElementById('modalDesc').textContent  = desc
+    const overlay = document.getElementById('modalOverlay')
+    overlay.classList.add('open')
+    const btn = document.getElementById('modalConfirm')
+    btn.onclick = () => { cerrarModal(); onConfirm() }
+}
+function cerrarModal() {
+    document.getElementById('modalOverlay').classList.remove('open')
+}
+document.getElementById('modalOverlay').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) cerrarModal()
+})
+
+// ── Eliminar ──────────────────────────────────────────────────────────────────
+async function confirmarEliminar() {
+    abrirModal(
+        '¿Quitar de tu lista?',
+        `"${data?.anime?.titulo}" será eliminado de tu lista permanentemente.`,
+        async () => {
+            try {
+                const res = await fetch('/lista/eliminar', {
+                    method:  'POST',
+                    headers: { 'Content-Type': 'application/json', ...csrf() },
+                    body:    JSON.stringify({ anime_id: animeId })
+                })
+                if (!res.ok) throw new Error()
+                try { new BroadcastChannel('ca_lista').postMessage({ tipo: 'invalidar' }) } catch(e) {}
+                toast('Eliminado de tu lista', 'ok')
+                setTimeout(() => history.back(), 900)
+            } catch {
+                toast('Error al eliminar', 'err')
+            }
+        }
+    )
+}
+
+// ── Utilidades ────────────────────────────────────────────────────────────────
+function esc(v = '') {
+    return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+}
+function fmtFecha(str) {
+    if (!str) return ''
+    try { return new Date(str).toLocaleDateString('es', { day:'numeric', month:'short', year:'numeric' }) }
+    catch { return str }
+}
+
+// Advertir si hay cambios sin guardar
+// sin advertencia de salida
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+cargar()
+</script>
+</body>
+</html>

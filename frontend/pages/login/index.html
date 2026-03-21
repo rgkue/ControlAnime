@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar sesión — ControlAnime</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="/static/logo.png">
+    <link rel="stylesheet" href="/static/pages/login/style.css">
+</head>
+<body>
+
+<div class="container">
+
+    <section class="collage">
+        <div class="grid" id="animeGrid"></div>
+        <div class="collage-overlay"></div>
+        <div class="collage-brand">
+            <a href="/" class="logo">Control<span>Anime</span></a>
+            <p>Tu lista de anime, siempre contigo.</p>
+        </div>
+    </section>
+
+    <section class="form-wrapper">
+
+        <!-- ── PANEL 1: LOGIN ── -->
+        <div class="form" id="panelLogin">
+            <h1>Iniciar sesión</h1>
+            <p>Accede a tu cuenta</p>
+
+            <div id="formError" class="form-error"></div>
+
+            <div class="field">
+                <label>Correo electrónico</label>
+                <input type="email" id="email" placeholder="tu@email.com">
+            </div>
+
+            <div class="field">
+                <label>Contraseña</label>
+                <div class="password-container">
+                    <input type="password" id="password" placeholder="Tu contraseña">
+                    <button type="button" class="toggle-password" data-target="password">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <button class="btn" id="btnLogin">Ingresar</button>
+
+            <div class="footer-link">
+                <a href="#" id="linkOlvide">¿Olvidaste tu contraseña?</a>
+            </div>
+            <div class="footer-link" style="margin-top: 10px;">
+                ¿No tienes cuenta? <a href="/register">Registrarse</a>
+            </div>
+        </div>
+
+        <!-- ── PANEL 2: INGRESAR EMAIL ── -->
+        <div class="form hidden" id="panelEmail">
+            <button class="btn-back" id="btnVolverLogin">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                Volver al inicio de sesión
+            </button>
+
+            <h1>Recuperar cuenta</h1>
+            <p>Te enviaremos un código de verificación</p>
+
+            <div id="emailError" class="form-error"></div>
+
+            <div class="field">
+                <label>Correo electrónico</label>
+                <input type="email" id="emailRecuperar" placeholder="tu@email.com">
+            </div>
+
+            <button class="btn" id="btnEnviarCodigo">Enviar código</button>
+        </div>
+
+        <!-- ── PANEL 3: CÓDIGO + NUEVA CONTRASEÑA ── -->
+        <div class="form hidden" id="panelCodigo">
+            <button class="btn-back" id="btnVolverEmail">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                Cambiar correo
+            </button>
+
+            <h1>Nueva contraseña</h1>
+            <p id="codigoDesc">Ingresa el código que enviamos a tu correo</p>
+
+            <div id="codigoError" class="form-error"></div>
+
+            <div class="field">
+                <label>Código de verificación</label>
+                <input type="text" id="codigoReset" placeholder="000000" maxlength="10" autocomplete="one-time-code">
+            </div>
+
+            <div class="field">
+                <label>Nueva contraseña</label>
+                <div class="password-container">
+                    <input type="password" id="passwordNueva" placeholder="Mínimo 8 caracteres">
+                    <button type="button" class="toggle-password" data-target="passwordNueva">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Confirmar contraseña</label>
+                <div class="password-container">
+                    <input type="password" id="passwordConfirmar" placeholder="Repite la contraseña">
+                    <button type="button" class="toggle-password" data-target="passwordConfirmar">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <button class="btn" id="btnCambiarPassword">Cambiar contraseña</button>
+        </div>
+
+        <!-- ── PANEL 4: ÉXITO ── -->
+        <div class="form hidden" id="panelExito">
+            <div class="exito-icon">✓</div>
+            <h1>¡Listo!</h1>
+            <p>Tu contraseña fue actualizada correctamente.</p>
+            <button class="btn" id="btnIrLogin" style="margin-top: 28px;">Iniciar sesión</button>
+        </div>
+
+    </section>
+
+</div>
+
+<script src="/static/pages/login/script.js"></script>
+</body>
+</html>

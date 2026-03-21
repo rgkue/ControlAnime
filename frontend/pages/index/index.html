@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ControlAnime</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="/static/logo.png">
+    <link rel="stylesheet" href="/static/pages/index/style.css">
+</head>
+<body>
+    
+<header id="header">
+    <a href="/" class="logo">Control<span>Anime</span></a>
+    <nav class="nav-center">
+        <a href="#inicio" class="nav-link">Inicio</a>
+        <a href="#proyecto" class="nav-link">Proyecto</a>
+        <a href="#sobre-nosotros" class="nav-link">Sobre nosotros</a>
+    </nav>
+    <nav class="nav-auth">
+        <a href="/login" class="btn-ghost">Iniciar sesi&oacute;n</a>
+        <a href="/register" class="btn-primary">Registrarse</a>
+    </nav>
+</header>
+
+<div class="hero" id="inicio">
+    <div class="slides" id="slides">
+        <div class="slide active" style="background:#111">
+            <div class="slide-overlay"></div>
+            <div class="slide-overlay-bottom"></div>
+            <div class="slide-content">
+                <div class="slide-genre skeleton" style="width:120px;height:13px;margin-bottom:14px"></div>
+                <div class="skeleton" style="width:360px;height:64px;margin-bottom:16px;border-radius:4px"></div>
+                <div class="skeleton" style="width:100%;height:13px;margin-bottom:8px"></div>
+                <div class="skeleton" style="width:75%;height:13px"></div>
+            </div>
+        </div>
+    </div>
+    <div class="carousel-dots" id="dots"></div>
+</div>
+
+<div class="features">
+    <div class="feature reveal">
+        <span class="feature-icon">&#128203;</span>
+        <h3>Tu lista personal</h3>
+        <p>Marca cada anime como visto, en progreso o pendiente. Tu historial siempre disponible desde cualquier dispositivo.</p>
+    </div>
+    <div class="feature reveal" style="transition-delay:0.1s">
+        <span class="feature-icon">&#128269;</span>
+        <h3>Busca y descubre</h3>
+        <p>Explora miles de t&iacute;tulos por nombre, g&eacute;nero o temporada. Fichas completas con sinopsis, rating y m&aacute;s.</p>
+    </div>
+    <div class="feature reveal" style="transition-delay:0.2s">
+        <span class="feature-icon">&#9729;&#65039;</span>
+        <h3>Backup en la nube</h3>
+        <p>Tu lista no desaparece si cambias de dispositivo. Todo sincronizado autom&aacute;ticamente en tu cuenta.</p>
+    </div>
+</div>
+
+<section class="about" id="proyecto" >
+    <div class="about-visual reveal">
+        <div class="about-grid">
+            <div class="about-grid-item"><img src="" alt="" id="aboutImg1"></div>
+            <div class="about-grid-item"><img src="" alt="" id="aboutImg2"></div>
+            <div class="about-grid-item"><img src="" alt="" id="aboutImg3"></div>
+        </div>
+    </div>
+    <div class="reveal" style="transition-delay:0.15s">
+        <div class="about-label">Sobre el proyecto</div>
+        <h2>Un hub para tu experiencia anime</h2>
+        <p>ControlAnime nace como proyecto personal con un objetivo claro: darte un espacio centralizado donde gestionar todo lo relacionado con tu consumo de anime.</p>
+        <p>Descubre animes de temporada, explora los m&aacute;s populares y lleva un registro personal de todo lo que has visto. Sin perder nada, desde cualquier dispositivo.</p>
+        <p>Tambi&eacute;n funciona como acceso r&aacute;pido hacia Crunchyroll, AnimeFLV, MangaFire y otras plataformas &mdash; respetando siempre que el contenido es de sus servicios.</p>
+        <div class="about-stats">
+            <div>
+                <div class="stat-num" id="statAnimes">&mdash;</div>
+                <div class="stat-label">Animes en cat&aacute;logo</div>
+            </div>
+            <div>
+                <div class="stat-num">100%</div>
+                <div class="stat-label">Gratuito</div>
+            </div>
+            <div>
+                <div class="stat-num">0</div>
+                <div class="stat-label">Anuncios</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="cta-band reveal">
+    <div>
+        <h2>Empieza a controlar tu lista hoy</h2>
+        <p>Crea tu cuenta gratis. Sin tarjeta de cr&eacute;dito, sin anuncios.</p>
+    </div>
+    <a href="/register">Crear cuenta gratis</a>
+</div>
+
+<section class="contact" id="sobre-nosotros">
+    <div class="reveal">
+
+        <div class="contact-block">
+            <h2>Sobre nosotros</h2>
+            <p>ControlAnime es una plataforma para organizar y gestionar tu progreso en anime de forma simple</p>
+            <p>El proyecto nace como una iniciativa personal de aprendizaje en desarrollo web, backend, seguridad y arquitectura de software, aplicando buenas prácticas en la construcción de aplicaciones modernas.</p>
+            <div class="author-links">
+                <a href="https://rgkue.github.io" target="_blank" class="contact-link-item">
+                    <span class="contact-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></span>
+                    <span>rgkue - GitHub</span>
+                </a>
+                <a href="https://instagram.com/rgkue" target="_blank" class="contact-link-item">
+                    <span class="contact-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></span>
+                    <span>@rgkue - Instagram</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="contact-block" style="margin-top:36px;padding-top:28px;border-top:1px solid var(--border)">
+            <h2>Soporte</h2>
+            <p>Si encuentras errores, comportamientos inesperados o posibles vulnerabilidades de seguridad, por favor repórtalo de forma responsable.</p>
+            <p>Si tienes sugerencias, comentarios o necesitas asistencia relacionada con la plataforma, puedes contactarnos a través del correo a continuación.</p>
+            <div style="margin-top:16px">
+               <a href="mailto:control.anime@protonmail.com" class="contact-link-item">
+                    <span class="contact-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></span>
+                    <span>control.anime@protonmail.com</span>
+                </a>
+            </div>
+        </div>
+
+    </div>
+    <div class="reveal" style="transition-delay:0.1s">
+
+        <div class="contact-block">
+            <h2>Redes</h2>
+            <p>Sigue el desarrollo del proyecto y mantente al tanto de actualizaciones, mejoras y novedades a través de nuestras redes.</p>
+            <p>También puedes visitar el repositorio del proyecto para conocer más sobre su desarrollo y evolución.</p>
+            <div class="contact-links" style="margin-top:23px">
+            <p></p>
+                <a href="https://discord.com/channels/PLACEHOLDER" target="_blank" class="contact-link-item">
+                    <span class="contact-icon"> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.067 14.067 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg></span>
+                    <span>Control Anime - Discord</span>
+                    </a>
+                <a href="https://instagram.com/controlanime1" target="_blank" class="contact-link-item">
+                    <span class="contact-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></span>
+                    <span>@controlanime1 - Instagram</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="donate-block">
+            <h2>Apoya el proyecto</h2>
+            <p>Si ControlAnime te resulta util, puedes apoyar su desarrollo con una donacion.</p>
+            <p>Necesito comer :,v</p>
+            <div class="contact-links">
+                <a href="https://paypal.me/rgkue" target="_blank" class="contact-link-item donate-paypal">
+                    <span class="contact-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 0 0-.607-.541c-.013.076-.026.175-.041.254-.59 3.025-2.566 6.082-8.558 6.082H9.825l-1.173 7.48h3.396c.461 0 .852-.334.924-.79l.038-.196.733-4.64.047-.257a.932.932 0 0 1 .924-.79h.581c3.765 0 6.712-1.528 7.573-5.95.36-1.847.173-3.39-.646-4.652z"/></svg></span>
+                    <span>Donar con PayPal</span>
+                </a>
+                <a href="https://ko-fi.com/rgkue" target="_blank" class="contact-link-item donate-kofi">
+                    <span class="contact-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M23.881 8.948c-.773-4.085-4.859-4.593-4.859-4.593H.723c-.604 0-.679.798-.679.798s-.082 7.324-.022 11.822c.164 2.424 2.586 2.672 2.586 2.672s8.267-.023 11.966-.049c2.438-.426 2.683-2.566 2.658-3.734 4.352.24 7.422-2.831 6.649-6.916zm-11.062 3.511c-1.246 1.453-4.011 3.976-4.011 3.976s-.121.119-.31.023c-.076-.057-.108-.09-.108-.09-.443-.441-3.368-3.049-4.034-3.954-.709-.965-1.041-2.7-.091-3.71.951-1.01 3.005-1.086 4.363.407 0 0 1.565-1.782 3.468-.963 1.904.82 1.832 2.719.723 4.311zm6.173.478c-.928.116-1.682.028-1.682.028V7.284h1.77s1.971.551 1.971 2.638c0 1.913-.985 2.667-2.059 3.015z"/></svg></span>
+                    <span>Apoyar en Ko-fi</span>
+                </a>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<script src="/static/pages/index/script.js"></script>
+
+<footer>
+    <a href="/" class="logo">Control<span>Anime</span></a>
+    <div class="footer-links">
+        <button class="footer-link" onclick="openModal('modal-terminos')">Términos y condiciones</button>
+        <span class="footer-sep">·</span>
+        <button class="footer-link" onclick="openModal('modal-privacidad')">Política de privacidad</button>
+    </div>
+    <p>© 2026 ControlAnime</p>
+</footer>
+
+<!-- MODAL TÉRMINOS Y CONDICIONES -->
+<div class="modal-overlay" id="modal-terminos" onclick="closeModalOutside(event,'modal-terminos')">
+    <div class="modal-box">
+        <div class="modal-header">
+            <div>
+                <div class="modal-label">Documento legal</div>
+                <h2 class="modal-title">Términos y Condiciones de Uso</h2>
+                <div class="modal-date">Última actualización: Marzo 2026</div>
+            </div>
+            <button class="modal-close" onclick="closeModal('modal-terminos')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-section"><h3>1. Aceptación de los términos</h3><p>Al acceder o utilizar ControlAnime, aceptas cumplir estos Términos y Condiciones en su totalidad. Si no estás de acuerdo, debes dejar de utilizar el servicio de inmediato. El uso continuado tras cualquier modificación implica la aceptación de los nuevos términos.</p></div>
+            <div class="modal-section"><h3>2. Descripción del servicio</h3><p>ControlAnime es una plataforma web gratuita, sin fines de lucro, para gestionar tu experiencia anime. Incluye:</p><ul><li>Registro de cuenta y perfil público opcional</li><li>Listas personales: visto, pendiente, abandonado</li><li>Reseñas y calificaciones del 1 al 10</li><li>Top 5 personal visible en el perfil público</li><li>Catálogo de más de 2000 títulos actualizados</li><li>Exportación de lista en JSON y XLSX</li></ul><p>El servicio se proporciona <em>"tal como está"</em>, sin garantía de disponibilidad continua.</p></div>
+            <div class="modal-section"><h3>3. Edad mínima</h3><p>Debes tener al menos <strong>13 años</strong> para crear una cuenta. Menores de 18 años requieren autorización de padres o tutor legal. Cuentas de menores de 13 años serán eliminadas sin previo aviso.</p></div>
+            <div class="modal-section"><h3>4. Cuentas de usuario</h3><p>Eres el único responsable de tu cuenta:</p><ul><li>Mantener tu contraseña segura y no compartirla</li><li>No intentar acceder a cuentas de otros usuarios</li><li>Notificarnos si sospechas que tu cuenta fue comprometida</li><li>No crear múltiples cuentas para evadir suspensiones</li></ul></div>
+            <div class="modal-section"><h3>5. Uso aceptable</h3><p>Está estrictamente prohibido:</p><ul><li>Publicar datos personales de terceros (teléfonos, domicilios, documentos)</li><li>Publicar contenido ilegal, violento, explícito o de odio</li><li>Acosar, amenazar o abusar de otros usuarios</li><li>Publicar spam o publicidad no autorizada</li><li>Vulnerar o intentar comprometer la seguridad del sitio</li><li>Usar bots o scripts automatizados sin autorización escrita</li><li>Suplantar la identidad de otras personas o de ControlAnime</li></ul></div>
+            <div class="modal-section"><h3>6. Contenido generado por usuarios</h3><p>Las reseñas y comentarios que publiques son de tu exclusiva responsabilidad. Al publicar, otorgas a ControlAnime una licencia no exclusiva para mostrar el contenido dentro de la plataforma. Nos reservamos el derecho de eliminar contenido o suspender cuentas sin compensación si se detecta incumplimiento.</p></div>
+            <div class="modal-section"><h3>7. Propiedad intelectual</h3><p>Los títulos, imágenes y datos de animes pertenecen a sus respectivos propietarios. ControlAnime no reclama propiedad sobre ese contenido. El código, diseño y marca <strong>ControlAnime</strong> son propiedad de sus desarrolladores y no pueden reproducirse sin autorización.</p></div>
+            <div class="modal-section"><h3>8. Disponibilidad del servicio</h3><p>ControlAnime puede experimentar interrupciones por mantenimiento, fallos técnicos o causas externas. No se garantiza disponibilidad del 100%.</p></div>
+            <div class="modal-section"><h3>9. Terminación de cuenta</h3><p>Podemos suspender o eliminar cuentas que violen estos términos. El usuario puede eliminar su cuenta en cualquier momento desde <em>Configuración → Zona de peligro</em>.</p></div>
+            <div class="modal-section"><h3>10. Limitación de responsabilidad</h3><p>ControlAnime no se hace responsable por contenido publicado por usuarios, pérdida de datos por fallos técnicos, ni por daños derivados del uso del sitio.</p></div>
+            <div class="modal-section"><h3>11. Cambios en los términos</h3><p>Estos términos pueden actualizarse. Los cambios significativos serán notificados en el sitio o por email.</p></div>
+            <div class="modal-section"><h3>12. Contacto</h3><p>Para consultas o reportes:<br><a href="mailto:control.anime@protonmail.com">control.anime@protonmail.com</a></p></div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL POLÍTICA DE PRIVACIDAD -->
+<div class="modal-overlay" id="modal-privacidad" onclick="closeModalOutside(event,'modal-privacidad')">
+    <div class="modal-box">
+        <div class="modal-header">
+            <div>
+                <div class="modal-label">Documento legal</div>
+                <h2 class="modal-title">Política de Privacidad</h2>
+                <div class="modal-date">Última actualización: Marzo 2026</div>
+            </div>
+            <button class="modal-close" onclick="closeModal('modal-privacidad')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-section"><h3>1. Introducción</h3><p>ControlAnime se compromete a proteger la privacidad de sus usuarios. Esta política describe qué datos recopilamos, cómo los usamos y qué derechos tienes.</p></div>
+            <div class="modal-section"><h3>2. Datos que recopilamos</h3><p><strong>Datos que tú proporcionas:</strong></p><ul><li>Email (requerido)</li><li>Contraseña (hash bcrypt, nunca en texto plano)</li><li>Nombre de usuario (opcional)</li><li>Foto de perfil (opcional)</li><li>Redes sociales: Instagram, Discord, TikTok (opcionales)</li><li>Lista de animes, reseñas, calificaciones y Top 5</li></ul><p><strong>Datos automáticos:</strong></p><ul><li>Dirección IP (seguridad y detección de abuso)</li><li>Logs de acceso (rotación automática cada 30 días)</li><li>Cookies de sesión y CSRF (necesarias para el funcionamiento)</li></ul></div>
+            <div class="modal-section"><h3>3. Finalidad del uso de datos</h3><p>Tus datos se usan exclusivamente para autenticación, funcionamiento de la plataforma, seguridad y estadísticas internas sin identificación personal. No se usan para publicidad ni se ceden a terceros.</p></div>
+            <div class="modal-section"><h3>4. Almacenamiento y seguridad</h3><p>Los datos se protegen con:</p><ul><li>Contraseñas hasheadas con bcrypt (irreversibles)</li><li>Conexiones HTTPS con certificado SSL</li><li>Protección CSRF en todas las operaciones</li><li>Headers de seguridad HTTP (CSP, HSTS, X-Frame-Options)</li><li>Backups automáticos diarios, rotación de 7 días</li><li>Logs con rotación automática cada 30 días</li></ul></div>
+            <div class="modal-section"><h3>5. Cookies</h3><p>Usamos únicamente:</p><ul><li><strong>session</strong> — HttpOnly, mantiene tu sesión. No accesible desde JavaScript.</li><li><strong>csrf_token</strong> — Protección CSRF. Se renueva en cada sesión.</li></ul><p>Sin cookies de seguimiento, analítica de terceros ni publicidad.</p></div>
+            <div class="modal-section"><h3>6. Compartición de datos</h3><p>ControlAnime <strong>no vende ni comparte</strong> datos personales, salvo requerimiento legal o para proteger la seguridad del servicio. Los datos del <strong>perfil público</strong> son visibles solo si el usuario activa esa opción voluntariamente.</p></div>
+            <div class="modal-section"><h3>7. Tus derechos</h3><p>Puedes acceder, exportar (<em>/exportar</em>), corregir (<em>/configuracion</em>) y eliminar tu cuenta y todos tus datos desde <em>Configuración → Zona de peligro</em>. La eliminación es permanente e irreversible.</p></div>
+            <div class="modal-section"><h3>8. Menores de edad</h3><p>No recopilamos datos de menores de 13 años intencionalmente. Si detectamos una cuenta de menor, sus datos serán eliminados.</p></div>
+            <div class="modal-section"><h3>9. Retención de datos</h3><p>Los datos se conservan mientras la cuenta esté activa. Tras eliminar la cuenta, se borran de servidores activos de inmediato y de backups en el siguiente ciclo (máximo 7 días).</p></div>
+            <div class="modal-section"><h3>10. Cambios en la política</h3><p>Esta política puede actualizarse. Los cambios significativos serán notificados dentro del sitio.</p></div>
+            <div class="modal-section"><h3>11. Contacto</h3><p>Para ejercer tus derechos o consultas sobre privacidad:<br><a href="mailto:control.anime@protonmail.com">control.anime@protonmail.com</a></p></div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

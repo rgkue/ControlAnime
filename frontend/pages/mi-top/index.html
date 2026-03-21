@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Top 5 · ControlAnime</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg:           #090909;
+    --surface:      #111111;
+    --surface2:     #181818;
+    --surface3:     #1e1e1e;
+    --border:       #222222;
+    --border2:      #2a2a2a;
+    --accent:       #f97316;
+    --accent-hover: #ea6a0a;
+    --accent-dim:   rgba(249,115,22,0.12);
+    --text:         #e8e8e8;
+    --muted:        #666;
+    --muted2:       #888;
+    --green:        #4ade80;
+    --amber:        #fbbf24;
+    --red:          #f87171;
+    --sidebar-w:         240px;
+    --sidebar-collapsed: 64px;
+    --topbar-h:          58px;
+    --gold:   #f59e0b;
+    --silver: #94a3b8;
+    --bronze: #b45309;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'DM Sans', sans-serif; font-size: 14px; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; }
+
+/* ── SIDEBAR ──────────────────────────────────────── */
+.sidebar { width: var(--sidebar-w); background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; transition: width 0.25s; overflow: hidden; flex-shrink: 0; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; }
+.sidebar.collapsed { width: var(--sidebar-collapsed); }
+.sidebar-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 16px; border-bottom: 1px solid var(--border); min-height: 64px; overflow: hidden; }
+.logo { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.06em; color: var(--accent); text-decoration: none; white-space: nowrap; transition: opacity 0.25s; }
+.logo span { color: var(--text); }
+.sidebar.collapsed .logo { opacity: 0; pointer-events: none; width: 0; }
+.collapse-btn { background: none; border: none; color: var(--muted); cursor: pointer; padding: 6px; border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: color 0.25s, background 0.25s, transform 0.25s; flex-shrink: 0; }
+.collapse-btn:hover { color: var(--accent); background: var(--accent-dim); }
+.sidebar.collapsed .collapse-btn { transform: rotate(180deg); }
+.sidebar-nav { flex: 1; padding: 12px 8px; display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
+.nav-item { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 6px; color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 400; white-space: nowrap; transition: color 0.25s, background 0.25s; cursor: pointer; border: none; background: none; width: 100%; }
+.nav-item:hover { color: var(--text); background: var(--surface2); }
+.nav-item.active { color: var(--accent); background: var(--accent-dim); }
+.nav-item.logout:hover { color: #f87171; background: rgba(248,113,113,0.1); }
+.nav-icon { width: 18px; height: 18px; flex-shrink: 0; }
+.nav-label { transition: opacity 0.25s, width 0.25s; overflow: hidden; }
+.sidebar.collapsed .nav-label { opacity: 0; width: 0; }
+.sidebar-footer { padding: 8px 8px 16px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 2px; }
+
+/* ── MAIN ─────────────────────────────────────────── */
+.main { margin-left: var(--sidebar-w); flex: 1; min-height: 100vh; display: flex; flex-direction: column; transition: margin-left 0.25s; }
+.sidebar.collapsed ~ .main { margin-left: var(--sidebar-collapsed); }
+
+/* Topbar */
+.topbar { position: sticky; top: 0; z-index: 40; height: var(--topbar-h); background: rgba(9,9,9,0.88); backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 36px; gap: 10px; }
+.topbar-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: 0.1em; color: var(--text); }
+.topbar-user { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.topbar-email { font-size: 0.75rem; color: var(--muted); }
+.topbar-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--border2); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 600; color: var(--muted2); flex-shrink: 0; }
+.topbar-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ── LOADING ──────────────────────────────────────── */
+.loading-state { flex: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; color: var(--muted); }
+.spinner { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--border2); border-top-color: var(--accent); animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── BODY ─────────────────────────────────────────── */
+.page-body {
+    padding: 36px 40px 60px;
+    width: 100%;
+    opacity: 0;
+    animation: fadeUp 0.3s ease forwards;
+}
+
+/* Layout de 2 columnas en pantallas anchas */
+.layout-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 36px;
+    align-items: start;
+}
+.col-left  { min-width: 0; }
+.col-right { min-width: 0; }
+
+/* Aviso instrucciones */
+.hint-box { background: var(--accent-dim); border: 1px solid rgba(249,115,22,0.25); border-left: 3px solid var(--accent); border-radius: 8px; padding: 13px 16px; margin-bottom: 32px; font-size: 0.83rem; color: rgba(232,232,232,0.7); line-height: 1.6; }
+
+/* ── PODIO ────────────────────────────────────────── */
+.podio {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 40px;
+    padding: 0 16px;
+    min-height: 260px;
+}
+.podio-slot {
+    flex: 1; max-width: 200px;
+    display: flex; flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+.podio-slot:hover { transform: translateY(-4px); }
+.podio-slot.vacio { cursor: default; }
+.podio-slot.vacio:hover { transform: none; }
+
+/* Poster del podio */
+.podio-poster-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 2/3;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 2px solid var(--border2);
+    background: var(--surface2);
+    margin-bottom: 10px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.podio-slot[data-pos="1"] .podio-poster-wrap { border-color: rgba(245,158,11,0.5); box-shadow: 0 8px 40px rgba(245,158,11,0.2); }
+.podio-slot[data-pos="2"] .podio-poster-wrap { border-color: rgba(148,163,184,0.4); box-shadow: 0 8px 32px rgba(148,163,184,0.1); }
+.podio-slot[data-pos="3"] .podio-poster-wrap { border-color: rgba(180,83,9,0.4);  box-shadow: 0 8px 32px rgba(180,83,9,0.15); }
+.podio-poster { width: 100%; height: 100%; object-fit: cover; }
+
+/* Placeholder vacío */
+.podio-ph {
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 8px; color: var(--border2);
+    font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase;
+}
+.podio-ph svg { width: 28px; height: 28px; opacity: 0.3; }
+
+/* Medalla */
+.podio-medalla {
+    position: absolute; top: 8px; left: 8px;
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.85rem; font-weight: 700;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+[data-pos="1"] .podio-medalla { background: var(--gold);   color: #000; }
+[data-pos="2"] .podio-medalla { background: var(--silver); color: #000; }
+[data-pos="3"] .podio-medalla { background: var(--bronze); color: #fff; }
+[data-pos="4"] .podio-medalla, [data-pos="5"] .podio-medalla { background: var(--surface3); border: 1px solid var(--border2); color: var(--muted2); font-size: 0.75rem; }
+
+.podio-titulo { font-size: 0.78rem; font-weight: 500; color: var(--text); text-align: center; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.podio-rating { font-size: 0.72rem; color: var(--accent); margin-top: 2px; }
+
+/* Altura de la columna del podio (posicion 1 mas alta) */
+.podio-slot[data-pos="1"] { margin-bottom: 0; }
+.podio-slot[data-pos="2"] { margin-bottom: 16px; }
+.podio-slot[data-pos="3"] { margin-bottom: 28px; }
+.podio-slot[data-pos="4"] { margin-bottom: 40px; }
+.podio-slot[data-pos="5"] { margin-bottom: 52px; }
+
+/* ── LISTA #4 y #5 debajo del podio ──────────────────*/
+.lista-resto {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 40px;
+    padding: 0 16px;
+}
+
+/* ── SECCION EDITAR ───────────────────────────────── */
+.sec-label { font-family: 'Bebas Neue', sans-serif; font-size: 0.78rem; letter-spacing: 0.14em; color: var(--muted); text-transform: uppercase; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.sec-label::after { content:''; flex:1; height:1px; background:var(--border); max-width:60px; }
+
+/* Tabla de posiciones */
+.top-tabla { display: flex; flex-direction: column; gap: 8px; margin-bottom: 32px; }
+.top-row {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 16px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 11px;
+    transition: border-color 0.15s;
+}
+.top-row:hover { border-color: var(--border2); }
+.top-row.activo { border-color: var(--accent); background: var(--accent-dim); }
+
+.pos-badge {
+    width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif; font-size: 1rem;
+    flex-shrink: 0;
+}
+.pos-badge.p1 { background: var(--gold);   color: #000; }
+.pos-badge.p2 { background: var(--silver); color: #000; }
+.pos-badge.p3 { background: var(--bronze); color: #fff; }
+.pos-badge.p4, .pos-badge.p5 { background: var(--surface3); border: 1px solid var(--border2); color: var(--muted2); font-size: 0.85rem; }
+
+.top-poster { width: 36px; height: 52px; object-fit: cover; border-radius: 5px; border: 1px solid var(--border2); flex-shrink: 0; }
+.top-ph { width: 36px; height: 52px; border-radius: 5px; background: var(--surface3); border: 1px dashed var(--border2); flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.top-ph svg { width: 16px; height: 16px; color: var(--border2); }
+
+.top-info { flex: 1; min-width: 0; }
+.top-titulo { font-size: 0.87rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.top-rating { font-size: 0.72rem; color: var(--accent); margin-top: 2px; }
+.top-vacio-label { font-size: 0.82rem; color: var(--muted); font-style: italic; }
+
+.top-acciones { display: flex; gap: 6px; margin-left: auto; flex-shrink: 0; }
+.btn-icon { background: none; border: 1px solid var(--border2); border-radius: 7px; width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--muted); transition: all 0.15s; }
+.btn-icon:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-dim); }
+.btn-icon.del:hover { color: var(--red); border-color: var(--red); background: rgba(248,113,113,0.08); }
+.btn-icon svg { width: 13px; height: 13px; pointer-events: none; }
+
+/* ── BUSCADOR ─────────────────────────────────────── */
+.search-box { position: relative; margin-bottom: 12px; }
+.search-input {
+    width: 100%; padding: 11px 42px 11px 14px;
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: 9px; color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: 0.88rem;
+    outline: none; transition: border-color 0.15s;
+}
+.search-input:focus { border-color: var(--accent); }
+.search-input::placeholder { color: var(--muted); }
+.search-icon { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+.search-icon svg { width: 15px; height: 15px; }
+
+/* Resultados de búsqueda */
+.search-results { display: flex; flex-direction: column; gap: 6px; max-height: 320px; overflow-y: auto; }
+.search-results::-webkit-scrollbar { width: 4px; }
+.search-results::-webkit-scrollbar-track { background: transparent; }
+.search-results::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.result-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 9px 12px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--surface);
+    cursor: pointer; transition: all 0.15s;
+}
+.result-item:hover { border-color: var(--accent); background: var(--accent-dim); }
+.result-poster { width: 32px; height: 46px; object-fit: cover; border-radius: 4px; flex-shrink: 0; }
+.result-info { flex: 1; min-width: 0; }
+.result-titulo { font-size: 0.85rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.result-rating { font-size: 0.72rem; color: var(--accent); }
+.result-pos-badge { margin-left: auto; padding: 3px 8px; border-radius: 10px; font-size: 0.68rem; font-weight: 600; background: var(--accent); color: #000; white-space: nowrap; }
+
+/* Selector de posición */
+.pos-selector { display: flex; gap: 7px; margin-bottom: 20px; flex-wrap: wrap; }
+.pos-btn {
+    flex: 1; min-width: 44px;
+    padding: 9px 6px;
+    border-radius: 9px; border: 1px solid var(--border2);
+    background: var(--surface2); color: var(--muted2);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.95rem; letter-spacing: 0.04em;
+    cursor: pointer; transition: all 0.15s;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 2px;
+}
+.pos-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+.pos-btn.seleccionado { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+.pos-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.pos-btn-sub { font-family: 'DM Sans', sans-serif; font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+
+/* Feedback */
+.feedback { font-size: 0.78rem; min-height: 18px; margin-top: 8px; color: var(--green); }
+.feedback.err { color: var(--red); }
+.feedback.warn { color: var(--amber); }
+/* Drag & drop */
+.top-row[draggable="true"] { cursor: grab; }
+.top-row.dragging { opacity: 0.35; border-color: var(--accent) !important; }
+.top-row.drag-over { border-color: var(--accent) !important; background: var(--accent-dim) !important; transform: scale(1.01); }
+.drag-handle { color: var(--muted); flex-shrink:0; cursor:grab; opacity:0.35; transition:opacity .15s; display:flex; align-items:center; }
+.top-row:hover .drag-handle { opacity: 0.9; }
+.drag-handle svg { width:14px; height:14px; display:block; pointer-events:none; }
+
+/* ── ANIMACIONES ──────────────────────────────────── */
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+/* ── RESPONSIVE ───────────────────────────────────── */
+@media (max-width: 1100px) {
+    .layout-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 800px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; }
+    .page-body { padding: 20px 16px 48px; }
+    .podio { gap: 6px; min-height: 200px; padding: 0; }
+    .lista-resto { padding: 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <a class="logo" href="/dashboard"><span>CONTROL</span>ANIME</a>
+        <button class="collapse-btn" id="collapseBtn" title="Colapsar">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+    </div>
+    <div class="sidebar-nav">
+        <a class="nav-item" href="/dashboard" data-section="inicio">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span class="nav-label">Inicio</span>
+        </a>
+        <a class="nav-item" href="/mi-lista" data-section="mi-lista">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            <span class="nav-label">Mi lista</span>
+        </a>
+        <a class="nav-item active" href="/mi-top" data-section="mi-top">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <span class="nav-label">Mi Top 5</span>
+        </a>
+        <a class="nav-item" href="/dashboard/populares" data-section="populares">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            <span class="nav-label">Tendencias</span>
+        </a>
+        <a class="nav-item" href="/dashboard/emision" data-section="emision">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+            <span class="nav-label">En emisión</span>
+        </a>
+        <a class="nav-item" href="/dashboard/ranking" data-section="ranking">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 20 18 10"/><polyline points="12 20 12 4"/><polyline points="6 20 6 14"/></svg>
+            <span class="nav-label">Ranking</span>
+        </a>
+        <a class="nav-item" href="/dashboard/estadisticas" data-section="estadisticas">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            <span class="nav-label">Estadísticas</span>
+        </a>
+        <a class="nav-item" href="/dashboard/exportar" data-section="exportar">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span class="nav-label">Exportar</span>
+        </a>
+    </div>
+    <div class="sidebar-footer">
+        <a class="nav-item" href="/dashboard/configuracion" data-section="configuracion">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span class="nav-label">Configuración</span>
+        </a>
+        <a class="nav-item logout" href="#" onclick="event.preventDefault(); fetch('/logout',{method:'POST'}).finally(()=>location.href='/login')">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            <span class="nav-label">Cerrar sesión</span>
+        </a>
+    </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+    <div class="topbar">
+        <span class="topbar-title">MI TOP 5</span>
+        <div class="topbar-user">
+            <span class="topbar-email" id="topbarEmail"></span>
+            <div class="topbar-avatar" id="topbarAvatar"></div>
+        </div>
+    </div>
+
+    <div class="loading-state" id="loadingState">
+        <div class="spinner"></div>
+        <span>Cargando tu Top 5...</span>
+    </div>
+
+    <div class="page-body" id="pageBody" style="display:none">
+
+        <div class="hint-box">
+            Elige hasta 5 animes de tu lista de vistos para mostrar en tu perfil público. Se verán en formato podio.
+        </div>
+
+        <div class="layout-grid">
+            <!-- COL IZQUIERDA: podio + buscador -->
+            <div class="col-left">
+                <!-- PODIO (posiciones 1, 2, 3) -->
+                <div class="podio" id="podio"></div>
+
+                <!-- BUSCADOR -->
+                <div class="sec-label" style="margin-top:8px">Buscar en toda tu lista</div>
+
+                <div class="search-box">
+                    <input class="search-input" id="searchInput" type="text" placeholder="Buscar anime de tu lista..." autocomplete="off">
+                    <div class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+                </div>
+
+                <div class="pos-selector" id="posSelector"></div>
+
+                <div class="search-results" id="searchResults"></div>
+
+                <div class="feedback" id="feedback"></div>
+            </div>
+
+            <!-- COL DERECHA: tabla de edición -->
+            <div class="col-right">
+                <div class="sec-label">Editar tu Top 5</div>
+                <div class="top-tabla" id="topTabla"></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+// ── Estado ────────────────────────────────────────────
+let top5        = []   // [{ posicion, id, titulo, poster_url, cover_url, rating }]
+let miLista     = []   // [{ id, titulo, poster_url, rating }] — animes vistos
+let posSelec    = null // posición seleccionada para asignar
+let searchTimer = null
+
+// ── CSRF ──────────────────────────────────────────────
+function getCsrf() {
+    return document.cookie.split(';').map(c => c.trim())
+        .find(c => c.startsWith('csrf_token='))?.split('=')[1] || ''
+}
+function csrfHeaders() {
+    return { 'Content-Type': 'application/json', 'X-CSRF-Token': getCsrf() }
+}
+
+// ── INIT ──────────────────────────────────────────────
+async function init() {
+    try {
+        const [resMe, resTop, resLista] = await Promise.all([
+            fetch('/me'),
+            fetch('/mi-top5'),
+            fetch('/lista'),
+        ])
+        if (resMe.status === 401 || resTop.status === 401) {
+            location.href = '/login'; return
+        }
+
+        const me    = resMe.ok    ? await resMe.json()    : {}
+        const tData = resTop.ok   ? await resTop.json()   : { top5: [] }
+        const lData = resLista.ok ? await resLista.json() : { lista: {} }
+
+        // Topbar usuario
+        document.getElementById('topbarEmail').textContent = me.email || ''
+        const avatarEl = document.getElementById('topbarAvatar')
+        if (me.foto_perfil) {
+            avatarEl.innerHTML = `<img src="${me.foto_perfil}" alt="avatar">`
+        } else {
+            avatarEl.textContent = (me.email || '?').slice(0, 2).toUpperCase()
+        }
+
+        top5 = tData.top5 || []
+
+        // /lista devuelve { lista: [...], likes: [...], abandonados: [...] }
+        // lista es un array plano con objetos { tipo: 'visto' | 'pendiente', ... }
+        const listaPlana = lData.lista || []
+        miLista = listaPlana
+            .filter(a => a.tipo === 'visto')
+            .map(a => ({
+                id:         String(a.id),
+                titulo:     a.titulo,
+                poster_url: a.poster_url || '',
+                rating:     a.rating || null,
+            }))
+
+        document.getElementById('loadingState').style.display = 'none'
+        document.getElementById('pageBody').style.display = 'block'
+
+        renderTodo()
+        initDragDrop()
+        initBuscador()
+
+    } catch(e) {
+        console.error(e)
+        document.getElementById('loadingState').innerHTML =
+            `<span style="color:var(--red)">Error al cargar. Recarga la página.</span>`
+    }
+}
+
+// ── RENDER COMPLETO ───────────────────────────────────
+function renderTodo() {
+    renderPodio()
+    renderTabla()
+    renderPosSelector()
+}
+
+// ── PODIO (pos 1, 2, 3) ───────────────────────────────
+function renderPodio() {
+    const podio = document.getElementById('podio')
+
+    // Orden visual del podio: 2 - 1 - 3
+    const orden = [2, 1, 3]
+    podio.innerHTML = orden.map(pos => {
+        const item = top5.find(t => t.posicion === pos)
+        return slotPodio(pos, item)
+    }).join('')
+}
+
+function slotPodio(pos, item) {
+    const medallaLabel = pos
+    if (!item) {
+        return `
+        <div class="podio-slot vacio" data-pos="${pos}">
+            <div class="podio-poster-wrap">
+                <div class="podio-ph">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    <span>Vacío</span>
+                </div>
+                <div class="podio-medalla">${medallaLabel}</div>
+            </div>
+            <div class="podio-titulo" style="color:var(--muted)">—</div>
+        </div>`
+    }
+    return `
+    <div class="podio-slot" data-pos="${pos}" onclick="irAAnime('${item.id}')" title="${item.titulo}">
+        <div class="podio-poster-wrap">
+            <img class="podio-poster" src="${item.poster_url}" alt="${item.titulo}" loading="lazy">
+            <div class="podio-medalla">${medallaLabel}</div>
+        </div>
+        <div class="podio-titulo">${item.titulo}</div>
+        ${item.rating ? `<div class="podio-rating">★ ${item.rating}</div>` : ''}
+    </div>`
+}
+
+// ── TABLA DE EDICION ──────────────────────────────────
+function renderTabla() {
+    const tabla = document.getElementById('topTabla')
+    tabla.innerHTML = [1,2,3,4,5].map(pos => {
+        const item = top5.find(t => t.posicion === pos)
+        const cls  = ['p1','p2','p3','p4','p5'][pos-1]
+        const activo = posSelec === pos ? ' activo' : ''
+        if (!item) {
+            return `
+            <div class="top-row${activo}" id="row-${pos}">
+                <div class="pos-badge ${cls}">${pos}</div>
+                <div class="top-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+                <div class="top-info"><span class="top-vacio-label">Posición vacía — busca un anime abajo</span></div>
+                <div class="top-acciones">
+                    <button class="btn-icon" onclick="seleccionarPos(${pos})" title="Asignar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </button>
+                </div>
+            </div>`
+        }
+        return `
+        <div class="top-row${activo}" id="row-${pos}" draggable="true" data-pos="${pos}">
+            <div class="drag-handle" title="Arrastrar"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="9" cy="7" r="1.2"/><circle cx="9" cy="12" r="1.2"/><circle cx="9" cy="17" r="1.2"/><circle cx="15" cy="7" r="1.2"/><circle cx="15" cy="12" r="1.2"/><circle cx="15" cy="17" r="1.2"/></svg></div>
+            <div class="pos-badge ${cls}">${pos}</div>
+            <img class="top-poster" src="${item.poster_url}" alt="${item.titulo}" loading="lazy">
+            <div class="top-info">
+                <div class="top-titulo">${item.titulo}</div>
+                ${item.rating ? `<div class="top-rating">★ ${item.rating}</div>` : ''}
+            </div>
+            <div class="top-acciones">
+                <button class="btn-icon" onclick="seleccionarPos(${pos})" title="Cambiar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </button>
+                <button class="btn-icon del" onclick="eliminarPos(${pos})" title="Quitar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+        </div>`
+    }).join('')
+    setTimeout(initDragDrop, 0)
+}
+
+// ── SELECTOR DE POSICIÓN ──────────────────────────────
+function renderPosSelector() {
+    const sel = document.getElementById('posSelector')
+    const etiquetas = ['1er', '2do', '3er', '4to', '5to']
+    sel.innerHTML = [1,2,3,4,5].map(pos => {
+        const ocupado = top5.find(t => t.posicion === pos)
+        const seleccionado = posSelec === pos ? ' seleccionado' : ''
+        return `
+        <button class="pos-btn${seleccionado}" onclick="seleccionarPos(${pos})" title="Posición ${pos}">
+            ${etiquetas[pos-1]}
+            <span class="pos-btn-sub">${ocupado ? ocupado.titulo.slice(0,10)+'…' : 'Vacío'}</span>
+        </button>`
+    }).join('')
+}
+
+function seleccionarPos(pos) {
+    posSelec = (posSelec === pos) ? null : pos
+    renderTabla()
+    renderPosSelector()
+    if (posSelec !== null) {
+        document.getElementById('searchInput').focus()
+        document.getElementById('searchInput').scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+    feedback('')
+}
+
+// ── BUSCADOR ──────────────────────────────────────────
+function initBuscador() {
+    const input = document.getElementById('searchInput')
+    input.addEventListener('input', () => {
+        clearTimeout(searchTimer)
+        searchTimer = setTimeout(() => buscar(input.value.trim()), 180)
+    })
+}
+
+function buscar(q) {
+    const resultados = document.getElementById('searchResults')
+    if (!q) { resultados.innerHTML = ''; return }
+
+    const matches = miLista.filter(a =>
+        a.titulo.toLowerCase().includes(q.toLowerCase())
+    ).slice(0, 12)
+
+    if (!matches.length) {
+        resultados.innerHTML = `<div style="color:var(--muted);font-size:.82rem;padding:12px 0">Sin resultados en tu lista.</div>`
+        return
+    }
+
+    resultados.innerHTML = matches.map(a => {
+        const enTop = top5.find(t => t.id === a.id)
+        const posBadge = enTop
+            ? `<span class="result-pos-badge">#${enTop.posicion}</span>`
+            : ''
+        return `
+        <div class="result-item" onclick="asignar('${a.id}', '${a.titulo.replace(/'/g,"\\'")}', '${a.poster_url}', ${a.rating || 'null'})">
+            <img class="result-poster" src="${a.poster_url}" alt="${a.titulo}" loading="lazy">
+            <div class="result-info">
+                <div class="result-titulo">${a.titulo}</div>
+                ${a.rating ? `<div class="result-rating">★ ${a.rating}</div>` : ''}
+            </div>
+            ${posBadge}
+        </div>`
+    }).join('')
+}
+
+// ── ASIGNAR ANIME A POSICIÓN ──────────────────────────
+async function asignar(animeId, titulo, posterUrl, rating) {
+    if (!posSelec) {
+        feedback('Seleccioná una posición primero (los botones de arriba).', 'warn')
+        return
+    }
+    try {
+        const res = await fetch('/mi-top5/guardar', {
+            method: 'POST',
+            headers: csrfHeaders(),
+            body: JSON.stringify({ posicion: posSelec, anime_id: animeId })
+        })
+        const data = await res.json()
+        if (!res.ok) { feedback(data.error || 'Error al guardar', 'err'); return }
+
+        // Actualizar estado local
+        top5 = top5.filter(t => t.posicion !== posSelec && t.id !== animeId)
+        top5.push({ posicion: posSelec, id: animeId, titulo, poster_url: posterUrl, rating })
+        top5.sort((a,b) => a.posicion - b.posicion)
+
+        posSelec = null
+        document.getElementById('searchInput').value = ''
+        document.getElementById('searchResults').innerHTML = ''
+        renderTodo()
+        feedback(`✓ ${titulo} en posición #${top5.find(t=>t.id===animeId)?.posicion}`, 'ok')
+    } catch { feedback('Error de conexión', 'err') }
+}
+
+// ── ELIMINAR POSICIÓN ─────────────────────────────────
+async function eliminarPos(pos) {
+    try {
+        const res = await fetch('/mi-top5/eliminar', {
+            method: 'POST',
+            headers: csrfHeaders(),
+            body: JSON.stringify({ posicion: pos })
+        })
+        if (!res.ok) { feedback('Error al eliminar', 'err'); return }
+
+        top5 = top5.filter(t => t.posicion !== pos)
+        if (posSelec === pos) posSelec = null
+        renderTodo()
+        feedback('Posición eliminada', 'ok')
+    } catch { feedback('Error de conexión', 'err') }
+}
+
+// ── NAVEGAR A FICHA ───────────────────────────────────
+function irAAnime(id) {
+    window.location.href = `/dashboard/anime/${id}`
+}
+
+// ── FEEDBACK ──────────────────────────────────────────
+let feedbackTimer = null
+function feedback(msg, tipo = 'ok') {
+    const el = document.getElementById('feedback')
+    el.textContent = msg
+    el.className = 'feedback' + (tipo === 'err' ? ' err' : tipo === 'warn' ? ' warn' : '')
+    clearTimeout(feedbackTimer)
+    if (msg) feedbackTimer = setTimeout(() => el.textContent = '', 3000)
+}
+
+// ── DRAG & DROP ────────────────────────────────────────
+let _dragSrc = null
+
+function initDragDrop() {
+    const tabla = document.getElementById('topTabla')
+    if (!tabla) return
+    tabla.querySelectorAll('.top-row[draggable="true"]').forEach(row => {
+        row.addEventListener('dragstart', e => {
+            _dragSrc = row
+            row.classList.add('dragging')
+            e.dataTransfer.effectAllowed = 'move'
+        })
+        row.addEventListener('dragend', () => {
+            row.classList.remove('dragging')
+            document.querySelectorAll('.top-row').forEach(r => r.classList.remove('drag-over'))
+            _dragSrc = null
+        })
+        row.addEventListener('dragover', e => {
+            e.preventDefault()
+            if (!_dragSrc || row === _dragSrc) return
+            document.querySelectorAll('.top-row').forEach(r => r.classList.remove('drag-over'))
+            row.classList.add('drag-over')
+        })
+        row.addEventListener('dragleave', () => row.classList.remove('drag-over'))
+        row.addEventListener('drop', async e => {
+            e.preventDefault()
+            row.classList.remove('drag-over')
+            if (!_dragSrc || row === _dragSrc) return
+            const srcPos = parseInt(_dragSrc.dataset.pos)
+            const dstPos = parseInt(row.dataset.pos)
+            if (srcPos && dstPos && srcPos !== dstPos) await intercambiarPosiciones(srcPos, dstPos)
+        })
+    })
+}
+
+async function intercambiarPosiciones(posA, posB) {
+    const itemA = top5.find(t => t.posicion === posA)
+    const itemB = top5.find(t => t.posicion === posB)
+    if (!itemA) return
+    try {
+        if (itemB) {
+            const [rA, rB] = await Promise.all([
+                fetch('/mi-top5/guardar', { method:'POST', headers:csrfHeaders(), body:JSON.stringify({ posicion:posB, anime_id:itemA.id }) }),
+                fetch('/mi-top5/guardar', { method:'POST', headers:csrfHeaders(), body:JSON.stringify({ posicion:posA, anime_id:itemB.id }) })
+            ])
+            if (!rA.ok || !rB.ok) { feedback('Error al intercambiar', 'err'); return }
+            top5 = top5.map(t => {
+                if (t.posicion === posA) return {...t, posicion: posB}
+                if (t.posicion === posB) return {...t, posicion: posA}
+                return t
+            }).sort((a,b) => a.posicion - b.posicion)
+        } else {
+            const r = await fetch('/mi-top5/guardar', { method:'POST', headers:csrfHeaders(), body:JSON.stringify({ posicion:posB, anime_id:itemA.id }) })
+            if (!r.ok) { feedback('Error al mover', 'err'); return }
+            await fetch('/mi-top5/eliminar', { method:'POST', headers:csrfHeaders(), body:JSON.stringify({ posicion:posA }) })
+            top5 = top5.filter(t => t.posicion !== posA)
+            top5.push({...itemA, posicion: posB})
+            top5.sort((a,b) => a.posicion - b.posicion)
+        }
+        renderTodo()
+        feedback('✓ Reordenado')
+    } catch { feedback('Error de conexión', 'err') }
+}
+
+// ── SIDEBAR COLLAPSE ──────────────────────────────────
+;(function() {
+    const sidebar = document.getElementById('sidebar')
+    const btn     = document.getElementById('collapseBtn')
+    if (localStorage.getItem('sidebarCollapsed') === 'true') sidebar.classList.add('collapsed')
+    btn.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed')
+        localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'))
+    })
+})()
+
+// ── ARRANCAR ──────────────────────────────────────────
+init()
+</script>
+</body>
+</html>

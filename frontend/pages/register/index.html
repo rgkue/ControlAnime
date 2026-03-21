@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrarse — ControlAnime</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="/static/logo.png">
+    <link rel="stylesheet" href="/static/pages/register/style.css">
+</head>
+<body>
+
+<div class="container">
+
+    <section class="collage">
+        <div class="grid" id="animeGrid"></div>
+        <div class="collage-overlay"></div>
+        <div class="collage-brand">
+            <a href="/" class="logo">Control<span>Anime</span></a>
+            <p>Tu lista de anime, siempre contigo.</p>
+        </div>
+    </section>
+
+    <section class="form-wrapper">
+        <div class="form">
+            <h1>Crear cuenta</h1>
+            <p>Únete a ControlAnime</p>
+
+            <div id="formError" class="form-error"></div>
+            <div id="formExito" class="form-exito"></div>
+
+            <div class="field">
+                <label>Correo electrónico</label>
+                <input type="email" id="email" placeholder="tu@email.com">
+            </div>
+
+            <div class="field">
+                <label>Contraseña</label>
+                <div class="password-container">
+                    <input type="password" id="password" placeholder="Mínimo 8 caracteres">
+                    <button type="button" class="toggle-password" data-target="password">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Confirmar contraseña</label>
+                <div class="password-container">
+                    <input type="password" id="confirm" placeholder="Repite tu contraseña">
+                    <button type="button" class="toggle-password" data-target="confirm">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <label class="terms-check" id="termsLabel">
+                <input type="checkbox" id="chkTerminos">
+                <span>Acepto los <button type="button" class="link-btn" onclick="openModal('modal-terminos')">Términos y condiciones</button> y la <button type="button" class="link-btn" onclick="openModal('modal-privacidad')">Política de privacidad</button></span>
+            </label>
+            <div id="termsError" class="form-error" style="margin-top:0;margin-bottom:12px">Debes aceptar los términos y condiciones para continuar.</div>
+
+            <button class="btn" id="btnRegistro">Crear cuenta</button>
+
+            <div class="footer-link">
+                ¿Ya tienes cuenta? <a href="/login">Iniciar sesión</a>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<script src="/static/pages/register/script.js""></script>
+
+<!-- MODAL TÉRMINOS Y CONDICIONES -->
+<div class="modal-overlay" id="modal-terminos" onclick="closeModalOutside(event,'modal-terminos')">
+    <div class="modal-box">
+        <div class="modal-header">
+            <div>
+                <div class="modal-label">Documento legal</div>
+                <h2 class="modal-title">Términos y Condiciones de Uso</h2>
+                <div class="modal-date">Última actualización: Marzo 2026</div>
+            </div>
+            <button class="modal-close" onclick="closeModal('modal-terminos')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-section"><h3>1. Aceptación de los términos</h3><p>Al acceder o utilizar ControlAnime, aceptas cumplir estos Términos y Condiciones en su totalidad. Si no estás de acuerdo, debes dejar de utilizar el servicio de inmediato.</p></div>
+            <div class="modal-section"><h3>2. Descripción del servicio</h3><p>ControlAnime es una plataforma web gratuita, sin fines de lucro, para gestionar tu experiencia anime. Incluye listas personales, reseñas, calificaciones, Top 5 y catálogo de más de 2000 títulos. El servicio se proporciona <em>"tal como está"</em>, sin garantía de disponibilidad continua.</p></div>
+            <div class="modal-section"><h3>3. Edad mínima</h3><p>Debes tener al menos <strong>13 años</strong> para crear una cuenta. Menores de 18 años requieren autorización de padres o tutor legal.</p></div>
+            <div class="modal-section"><h3>4. Cuentas de usuario</h3><p>Eres el único responsable de tu cuenta: mantener tu contraseña segura, no compartirla, y no intentar acceder a cuentas ajenas.</p></div>
+            <div class="modal-section"><h3>5. Uso aceptable</h3><p>Está estrictamente prohibido publicar datos personales de terceros, contenido ilegal, spam, acosar a otros usuarios, vulnerar la seguridad del sitio o usar bots sin autorización.</p></div>
+            <div class="modal-section"><h3>6. Contenido generado por usuarios</h3><p>Las reseñas y comentarios son de tu exclusiva responsabilidad. ControlAnime puede eliminar contenido o suspender cuentas si se detecta incumplimiento.</p></div>
+            <div class="modal-section"><h3>7. Propiedad intelectual</h3><p>Los títulos, imágenes y datos de animes pertenecen a sus respectivos propietarios. El código, diseño y marca <strong>ControlAnime</strong> son propiedad de sus desarrolladores.</p></div>
+            <div class="modal-section"><h3>8. Disponibilidad del servicio</h3><p>ControlAnime puede experimentar interrupciones por mantenimiento, fallos técnicos o causas externas. No se garantiza disponibilidad del 100%.</p></div>
+            <div class="modal-section"><h3>9. Terminación de cuenta</h3><p>Podemos suspender cuentas que violen estos términos. Puedes eliminar tu cuenta en cualquier momento desde <em>Configuración → Zona de peligro</em>.</p></div>
+            <div class="modal-section"><h3>10. Limitación de responsabilidad</h3><p>ControlAnime no se hace responsable por contenido de usuarios, pérdida de datos por fallos técnicos, ni por daños derivados del uso del sitio.</p></div>
+            <div class="modal-section"><h3>11. Cambios en los términos</h3><p>Estos términos pueden actualizarse. Los cambios significativos serán notificados en el sitio o por email.</p></div>
+            <div class="modal-section"><h3>12. Contacto</h3><p><a href="mailto:control.anime@protonmail.com">control.anime@protonmail.com</a></p></div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL POLÍTICA DE PRIVACIDAD -->
+<div class="modal-overlay" id="modal-privacidad" onclick="closeModalOutside(event,'modal-privacidad')">
+    <div class="modal-box">
+        <div class="modal-header">
+            <div>
+                <div class="modal-label">Documento legal</div>
+                <h2 class="modal-title">Política de Privacidad</h2>
+                <div class="modal-date">Última actualización: Marzo 2026</div>
+            </div>
+            <button class="modal-close" onclick="closeModal('modal-privacidad')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-section"><h3>1. Introducción</h3><p>ControlAnime se compromete a proteger la privacidad de sus usuarios. Esta política describe qué datos recopilamos, cómo los usamos y qué derechos tienes.</p></div>
+            <div class="modal-section"><h3>2. Datos que recopilamos</h3><p><strong>Proporcionados por ti:</strong> email, contraseña (hash bcrypt), nombre de usuario, foto de perfil, redes sociales, lista de animes, reseñas y Top 5.<br><strong>Automáticos:</strong> dirección IP, logs de acceso (rotación 30 días), cookies de sesión y CSRF.</p></div>
+            <div class="modal-section"><h3>3. Finalidad</h3><p>Tus datos se usan exclusivamente para autenticación, funcionamiento de la plataforma, seguridad y estadísticas internas. No se usan para publicidad ni se ceden a terceros.</p></div>
+            <div class="modal-section"><h3>4. Seguridad</h3><p>Contraseñas hasheadas con bcrypt, HTTPS, protección CSRF, headers de seguridad HTTP, backups automáticos con rotación de 7 días.</p></div>
+            <div class="modal-section"><h3>5. Cookies</h3><p>Solo las estrictamente necesarias: <strong>session</strong> (HttpOnly) y <strong>csrf_token</strong>. Sin cookies de seguimiento ni publicidad.</p></div>
+            <div class="modal-section"><h3>6. Compartición de datos</h3><p>No vendemos ni compartimos datos personales, salvo requerimiento legal o para proteger la seguridad del servicio.</p></div>
+            <div class="modal-section"><h3>7. Tus derechos</h3><p>Puedes acceder, exportar, corregir y eliminar tus datos desde la configuración de tu cuenta. La eliminación es permanente.</p></div>
+            <div class="modal-section"><h3>8. Menores de edad</h3><p>No recopilamos datos de menores de 13 años. Las cuentas de menores serán eliminadas.</p></div>
+            <div class="modal-section"><h3>9. Contacto</h3><p><a href="mailto:control.anime@protonmail.com">control.anime@protonmail.com</a></p></div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

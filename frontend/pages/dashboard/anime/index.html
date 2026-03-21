@@ -1,0 +1,1516 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anime · ControlAnime</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="icon" type="image/x-icon" href="/static/logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg:           #090909;
+    --surface:      #111111;
+    --surface2:     #181818;
+    --surface3:     #1e1e1e;
+    --border:       #222222;
+    --border2:      #2a2a2a;
+    --accent:       #f97316;
+    --accent-hover: #ea6a0a;
+    --accent-dim:   rgba(249,115,22,0.12);
+    --text:         #e8e8e8;
+    --muted:        #666;
+    --muted2:       #888;
+    --green:        #4ade80;
+    --green-dim:    rgba(74,222,128,0.1);
+    --amber:        #fbbf24;
+    --like:         #ec4899;
+    --like-dim:     rgba(236,72,153,0.1);
+    --red:          #f87171;
+    --sidebar-w:         240px;
+    --sidebar-collapsed: 64px;
+    --topbar-h:          58px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+}
+
+/* ── SIDEBAR ──────────────────────────────────────── */
+.sidebar {
+    width: var(--sidebar-w);
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    transition: width 0.25s;
+    overflow: hidden;
+    flex-shrink: 0;
+    position: fixed; top: 0; left: 0; bottom: 0;
+    z-index: 100;
+}
+.sidebar.collapsed { width: var(--sidebar-collapsed); }
+.sidebar-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 16px;
+    border-bottom: 1px solid var(--border);
+    min-height: 64px; overflow: hidden;
+}
+.logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px; letter-spacing: 0.06em;
+    color: var(--accent);
+    text-decoration: none; white-space: nowrap;
+    transition: opacity 0.25s;
+}
+.logo span { color: var(--text); }
+.sidebar.collapsed .logo { opacity: 0; pointer-events: none; width: 0; }
+.collapse-btn {
+    background: none; border: none; color: var(--muted);
+    cursor: pointer; padding: 6px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    transition: color 0.25s, background 0.25s, transform 0.25s;
+    flex-shrink: 0;
+}
+.collapse-btn:hover { color: var(--accent); background: var(--accent-dim); }
+.sidebar.collapsed .collapse-btn { transform: rotate(180deg); }
+.sidebar-nav {
+    flex: 1; padding: 12px 8px;
+    display: flex; flex-direction: column; gap: 2px;
+    overflow: hidden;
+}
+.nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 11px 12px; border-radius: 6px;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 14px; font-weight: 400; white-space: nowrap;
+    transition: color 0.25s, background 0.25s;
+    cursor: pointer; border: none; background: none; width: 100%;
+}
+.nav-item:hover { color: var(--text); background: var(--surface2); }
+.nav-item.logout:hover { color: #f87171; background: rgba(248,113,113,0.1); }
+.nav-icon { width: 18px; height: 18px; flex-shrink: 0; }
+.nav-label { transition: opacity 0.25s, width 0.25s; overflow: hidden; }
+.sidebar.collapsed .nav-label { opacity: 0; width: 0; }
+.sidebar-footer {
+    padding: 8px 8px 16px;
+    border-top: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 2px;
+}
+
+/* ── MAIN ─────────────────────────────────────────── */
+.main { margin-left: var(--sidebar-w); flex: 1; min-height: 100vh; display: flex; flex-direction: column; transition: margin-left 0.25s; }
+.sidebar.collapsed ~ .main { margin-left: var(--sidebar-collapsed); }
+
+/* Topbar */
+.topbar {
+    position: sticky; top: 0; z-index: 40;
+    height: var(--topbar-h);
+    background: rgba(9,9,9,0.88);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center;
+    padding: 0 32px; gap: 10px;
+}
+.btn-back {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.8rem; color: var(--muted2);
+    background: none; border: none; cursor: pointer;
+    padding: 6px 0; transition: color 0.15s;
+}
+.btn-back:hover { color: var(--accent); }
+.btn-back svg { width: 14px; height: 14px; }
+.tb-sep  { color: var(--border2); }
+.tb-link { font-size: 0.8rem; color: var(--muted); text-decoration: none; }
+.tb-link:hover { color: var(--accent); }
+.tb-cur  { font-size: 0.8rem; color: var(--text); font-weight: 500;
+    max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Loading state */
+.loading-state {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 12px; color: var(--muted);
+}
+.spinner {
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 2px solid var(--border2);
+    border-top-color: var(--accent);
+    animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── HERO ─────────────────────────────────────────── */
+.hero {
+    position: relative;
+    height: 520px;
+    overflow: hidden;
+    opacity: 0; animation: fadeUp 0.35s ease forwards;
+}
+.hero-bg {
+    position: absolute; inset: 0;
+    background-size: cover; background-position: center 20%;
+    filter: brightness(0.16) saturate(1.2);
+    transform: scale(1.06);
+    transition: background-image 0.3s;
+}
+/* Capa de color accent sutil */
+.hero-color-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg,
+        rgba(249,115,22,0.08) 0%,
+        transparent 60%);
+    z-index: 1;
+}
+.hero-fade {
+    position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(to bottom,
+        rgba(9,9,9,0.15)  0%,
+        transparent       20%,
+        transparent       40%,
+        rgba(9,9,9,0.5)  65%,
+        rgba(9,9,9,0.92) 85%,
+        #090909          100%);
+}
+/* Viñeta lateral izquierda */
+.hero-vignette {
+    position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(to right,
+        rgba(9,9,9,0.6) 0%,
+        transparent 45%);
+}
+.hero-content {
+    position: relative; z-index: 3; height: 100%;
+    display: flex; align-items: flex-end;
+    padding: 0 44px 40px; gap: 32px;
+}
+.poster {
+    width: 140px; height: 200px; object-fit: cover;
+    border-radius: 10px;
+    border: 1.5px solid rgba(255,255,255,0.1);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(249,115,22,0.1);
+    flex-shrink: 0;
+    transition: transform 0.3s;
+}
+.poster:hover { transform: scale(1.02); }
+.hero-info { flex: 1; min-width: 0; padding-bottom: 4px; }
+.h-titulo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3rem; letter-spacing: 0.04em; line-height: 1;
+    color: #fff; margin-bottom: 6px;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.6);
+}
+.h-alt { font-size: 0.8rem; color: rgba(255,255,255,0.3); margin-bottom: 16px; letter-spacing: 0.02em; }
+.badges { display: flex; flex-wrap: wrap; gap: 7px; }
+.badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 11px; border-radius: 20px;
+    font-size: 0.72rem; font-weight: 500;
+}
+.b-rating  { background: var(--accent-dim); border: 1px solid rgba(249,115,22,0.35); color: var(--accent); }
+.b-eps     { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); }
+.b-tipo    { background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.25); color: #a5b4fc; }
+.b-anio    { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); color: rgba(255,255,255,0.4); }
+.b-fin     { background: rgba(100,116,139,0.1); border: 1px solid rgba(100,116,139,0.2); color: #94a3b8; }
+.b-current { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.25); color: var(--green); }
+
+/* ── PAGE BODY ────────────────────────────────────── */
+.page-body {
+    display: grid; grid-template-columns: 1fr 300px;
+    gap: 36px; padding: 36px 44px 60px;
+    max-width: 1180px; width: 100%;
+    opacity: 0; animation: fadeUp 0.35s 0.08s ease forwards;
+}
+
+/* ── COL PRINCIPAL ────────────────────────────────── */
+.sec-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.78rem; letter-spacing: 0.14em;
+    color: var(--muted); text-transform: uppercase;
+    margin-bottom: 10px;
+    display: flex; align-items: center; gap: 8px;
+}
+.sec-label::after { content:''; flex:1; height:1px; background:var(--border); max-width:60px; }
+
+.sinopsis-text {
+    font-size: 0.88rem; line-height: 1.85;
+    color: rgba(232,232,232,0.7); max-width: 660px;
+}
+.sinopsis-text.clamp {
+    display: -webkit-box; -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical; overflow: hidden;
+}
+.btn-toggle-sin {
+    margin-top: 7px; margin-bottom: 28px;
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 0.77rem; color: var(--accent);
+    background: none; border: none; cursor: pointer; padding: 0;
+}
+.btn-toggle-sin:hover { opacity: 0.75; }
+.btn-toggle-sin svg { width: 12px; height: 12px; }
+.genres-wrap { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 36px; }
+
+/* Badge de género con color dinámico — estilos base */
+.b-genre {
+    display: inline-flex; align-items: center;
+    padding: 4px 11px; border-radius: 20px;
+    font-size: 0.71rem; font-weight: 500;
+    border: 1px solid;
+    transition: opacity 0.15s;
+    cursor: default;
+}
+
+/* ── RESEÑAS ──────────────────────────────────────── */
+.resenas-header {
+    display: flex; align-items: center;
+    justify-content: space-between; margin-bottom: 18px;
+}
+.btn-escribir {
+    display: flex; align-items: center; gap: 6px;
+    padding: 7px 14px;
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: 7px; font-size: 0.79rem; color: var(--text);
+    font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.15s;
+}
+.btn-escribir:hover { border-color: var(--accent); color: var(--accent); }
+.btn-escribir svg { width: 13px; height: 13px; }
+
+.resena-form {
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 10px; padding: 18px; margin-bottom: 18px;
+    display: none;
+}
+.resena-form.open { display: block; animation: fadeUp 0.18s ease; }
+.resena-form-sub { font-size: 0.78rem; color: var(--muted2); margin-bottom: 12px; }
+.stars-row { display: flex; gap: 3px; margin-bottom: 13px; }
+.star-btn {
+    background: none; border: none; cursor: pointer; padding: 1px;
+    transition: transform 0.1s;
+}
+.star-btn:hover { transform: scale(1.15); }
+.star-btn svg { width: 21px; height: 21px; fill: var(--border2); stroke: var(--border2); transition: fill 0.08s, stroke 0.08s; }
+.star-btn.lit svg { fill: var(--amber); stroke: var(--amber); }
+.star-label { font-size: 0.78rem; color: var(--muted); margin-left: 6px; align-self: center; }
+.resena-ta {
+    width: 100%; min-height: 88px;
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: 7px; color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: 0.85rem;
+    padding: 10px 12px; resize: vertical; outline: none;
+    transition: border-color 0.15s; margin-bottom: 10px;
+}
+.resena-ta:focus { border-color: var(--accent); }
+.resena-ta::placeholder { color: var(--muted); }
+.form-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.btn-cancel {
+    padding: 7px 14px; background: none;
+    border: 1px solid var(--border2); border-radius: 7px;
+    color: var(--muted2); font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem; cursor: pointer; transition: all 0.15s;
+}
+.btn-cancel:hover { color: var(--text); border-color: var(--muted); }
+.btn-submit {
+    padding: 7px 18px;
+    background: var(--accent); border: none; border-radius: 7px;
+    color: #000; font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem; font-weight: 600; cursor: pointer;
+    transition: background 0.15s;
+}
+.btn-submit:hover { background: var(--accent-hover); }
+.btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.resena-item {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 15px; margin-bottom: 11px;
+    animation: fadeUp 0.2s ease;
+}
+.resena-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; }
+.resena-user { display: flex; align-items: center; gap: 9px; }
+.r-avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--surface3); border: 1px solid var(--border2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; font-weight: 600; color: var(--muted2);
+    flex-shrink: 0; overflow: hidden;
+}
+.r-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.r-name { font-size: 0.83rem; font-weight: 500; }
+.r-date { font-size: 0.7rem; color: var(--muted); }
+.r-stars { display: flex; gap: 2px; }
+.r-stars svg { width: 12px; height: 12px; }
+.r-stars svg.lit { fill: var(--amber); stroke: var(--amber); }
+.r-stars svg.dim { fill: var(--border2); stroke: var(--border2); }
+.r-text { font-size: 0.84rem; line-height: 1.65; color: rgba(232,232,232,0.72); }
+.r-own-actions { display: flex; gap: 10px; margin-top: 9px; }
+.r-btn {
+    font-size: 0.72rem; color: var(--muted);
+    background: none; border: none; cursor: pointer;
+    padding: 0; transition: color 0.15s;
+    font-family: 'DM Sans', sans-serif;
+}
+.r-btn:hover { color: var(--red); }
+.r-btn.edit:hover { color: var(--accent); }
+.resenas-vacio { text-align: center; padding: 32px 0; color: var(--muted); font-size: 0.85rem; }
+
+.resenas-pag {
+    display: flex; align-items: center; justify-content: center;
+    gap: 4px; padding: 18px 0 4px; flex-wrap: wrap;
+}
+.resenas-pag-btn {
+    min-width: 32px; height: 32px; padding: 0 6px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; color: var(--muted);
+    font-family: 'DM Sans', sans-serif; font-size: 13px;
+    cursor: pointer; transition: all 0.2s;
+    display: inline-flex; align-items: center; justify-content: center;
+}
+.resenas-pag-btn:hover:not(:disabled):not(.active) {
+    border-color: var(--accent); color: var(--accent); background: var(--accent-dim);
+}
+.resenas-pag-btn.active {
+    background: var(--accent); border-color: var(--accent); color: #000; font-weight: 600;
+}
+.resenas-pag-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.resenas-pag-info { font-size: 11px; color: var(--muted); text-align: center; padding-top: 6px; }
+
+/* ── Animes relacionados ───────────────────────────── */
+.rel-item {
+    display: flex; align-items: center; gap: 10px;
+    cursor: pointer; transition: background 0.15s;
+    border-radius: 6px; margin: 0 -4px; padding: 8px 4px;
+    border-bottom: 1px solid var(--border);
+}
+.rel-item:last-child { border-bottom: none; }
+.rel-item:hover { background: var(--surface3); }
+.rel-poster { width: 38px; height: 54px; object-fit: cover; border-radius: 4px; background: var(--surface3); flex-shrink: 0; }
+.rel-poster-ph { width: 38px; height: 54px; border-radius: 4px; background: var(--surface3); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.rel-info { flex: 1; min-width: 0; }
+.rel-titulo { font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; margin-bottom: 4px; }
+.rel-tipo { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; padding: 2px 7px; border-radius: 10px; background: var(--accent-dim); color: var(--accent); display: inline-block; }
+.rel-rating { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+/* ── COL DERECHA ──────────────────────────────────── */
+.action-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 22px;
+}
+/* El col-side completo es sticky — ambas tarjetas se mueven juntas */
+.col-side {
+    position: sticky;
+    top: calc(var(--topbar-h) + 16px);
+    max-height: calc(100vh - var(--topbar-h) - 32px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border2) transparent;
+}
+.col-side::-webkit-scrollbar { width: 4px; }
+.col-side::-webkit-scrollbar-track { background: transparent; }
+.col-side::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+.ac-label {
+    font-size: 0.69rem; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 14px;
+}
+
+/* Estado pill */
+.estado-pill {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 13px; border-radius: 9px;
+    background: var(--surface2); border: 1px solid var(--border);
+    margin-bottom: 14px; font-size: 0.82rem;
+}
+.e-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border2); flex-shrink: 0; }
+.e-dot.visto     { background: var(--green);  box-shadow: 0 0 6px var(--green); }
+.e-dot.pendiente { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+.e-label { color: var(--muted2); font-size: 0.81rem; }
+.e-label strong { color: var(--text); }
+
+/* Botones de acción — rediseñados */
+.btns-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px; margin-bottom: 8px;
+}
+.accion-btn {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 6px; padding: 14px 6px;
+    border-radius: 11px; border: 1px solid var(--border2);
+    background: var(--surface2); color: var(--muted2);
+    font-size: 0.68rem; font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer; transition: all 0.18s;
+    line-height: 1; letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+.accion-btn svg { width: 20px; height: 20px; stroke-width: 1.8; }
+.accion-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); transform: translateY(-1px); }
+.accion-btn.on-visto     { border-color: var(--green);  color: var(--green);  background: var(--green-dim);  box-shadow: 0 0 16px rgba(74,222,128,0.1); }
+.accion-btn.on-pendiente { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); box-shadow: 0 0 16px rgba(249,115,22,0.1); }
+.accion-btn.on-like      { border-color: var(--like);   color: var(--like);   background: var(--like-dim);   box-shadow: 0 0 16px rgba(236,72,153,0.1); }
+
+.btn-quitar {
+    width: 100%; padding: 9px; border-radius: 9px;
+    border: 1px solid var(--border); background: none;
+    color: var(--muted); font-size: 0.73rem;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer; transition: all 0.15s; display: none;
+}
+.btn-quitar:hover { border-color: var(--red); color: var(--red); background: rgba(248,113,113,0.06); }
+.btn-quitar.show { display: block; }
+
+.ac-divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+
+/* Info rows */
+.info-row {
+    display: flex; justify-content: space-between;
+    align-items: center; padding: 5px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.info-row:last-child { border-bottom: none; }
+.info-label { font-size: 0.74rem; color: var(--muted); }
+.info-value {
+    font-size: 0.74rem; color: var(--text); font-weight: 500;
+    text-align: right; max-width: 160px;
+}
+
+.ac-feedback { font-size: 0.74rem; text-align: center; margin-top: 10px; min-height: 16px; color: var(--green); }
+.ac-feedback.err { color: var(--red); }
+
+/* ── MODAL PROGRESO ───────────────────────────────── */
+.overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.75); backdrop-filter: blur(6px);
+    display: none; align-items: center; justify-content: center; padding: 16px;
+}
+.overlay.open { display: flex; }
+.modal-box {
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 14px; padding: 28px;
+    width: 100%; max-width: 420px;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.7);
+    animation: fadeUp 0.22s ease;
+}
+.modal-title { font-family:'Bebas Neue',sans-serif; font-size:1.3rem; letter-spacing:0.06em; margin-bottom:4px; }
+.modal-sub   { font-size:0.77rem; color:var(--muted); margin-bottom:22px; }
+.form-group  { margin-bottom:15px; }
+.form-label  { font-size:0.73rem; color:var(--muted2); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:5px; display:block; }
+.form-input  {
+    width:100%; background:var(--surface2);
+    border:1px solid var(--border2); border-radius:7px;
+    color:var(--text); font-family:'DM Sans',sans-serif;
+    font-size:0.85rem; padding:9px 12px; outline:none; transition:border-color 0.15s;
+}
+.form-input:focus { border-color:var(--accent); }
+.form-input::placeholder { color:var(--muted); }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.form-row.oculto { display:none; }
+.form-hint { font-size:0.7rem; color:var(--muted); margin-top:3px; }
+.check-no-recuerdo {
+    display:flex; align-items:center; gap:8px;
+    font-size:0.78rem; color:var(--muted); cursor:pointer;
+    margin-bottom:12px; user-select:none;
+}
+.check-no-recuerdo input[type="checkbox"] { accent-color: var(--accent); width:14px; height:14px; cursor:pointer; }
+.modal-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:22px; }
+.btn-modal-cancel {
+    padding:9px 18px; background:none;
+    border:1px solid var(--border2); border-radius:8px;
+    color:var(--muted2); font-family:'DM Sans',sans-serif;
+    font-size:0.82rem; cursor:pointer; transition:all 0.15s;
+}
+.btn-modal-cancel:hover { color:var(--text); border-color:var(--muted); }
+.btn-modal-ok {
+    padding:9px 22px; background:var(--green);
+    border:none; border-radius:8px; color:#000;
+    font-family:'DM Sans',sans-serif;
+    font-size:0.82rem; font-weight:600; cursor:pointer; transition:background 0.15s;
+}
+.btn-modal-ok:hover { background:#22c55e; }
+
+/* ── ANIMACIONES ──────────────────────────────────── */
+@keyframes fadeUp {
+    from { opacity:0; transform:translateY(14px); }
+    to   { opacity:1; transform:translateY(0); }
+}
+
+/* ── RESPONSIVE ───────────────────────────────────── */
+@media (max-width: 860px) {
+    .sidebar { display:none; }
+    .main { margin-left:0; }
+    .page-body { grid-template-columns:1fr; padding:18px 16px 48px; gap:20px; }
+    .hero { height: 380px; }
+    .hero-content { padding:0 16px 24px; gap:16px; }
+    .h-titulo { font-size:1.8rem; }
+    .poster { width:96px; height:138px; }
+    .col-side { order:-1; position:static; max-height:none; overflow:visible; }
+    .topbar { padding:0 16px; }
+}
+
+/* ── FORMULARIO INLINE VISTO ──────────────────────── */
+.visto-form {
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 0.3s ease, opacity 0.2s ease;
+}
+.visto-form.open {
+    max-height: 320px;
+    opacity: 1;
+}
+.visto-form-inner {
+    padding: 12px 0 4px;
+    border-top: 1px solid var(--border);
+    margin-top: 10px;
+}
+.form-group  { margin-bottom: 10px; }
+.form-label  { font-size: 0.69rem; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; display: block; }
+.form-input  {
+    width: 100%; background: var(--surface3);
+    border: 1px solid var(--border2); border-radius: 6px;
+    color: var(--text); font-family: 'DM Sans', sans-serif;
+    font-size: 0.81rem; padding: 7px 9px; outline: none;
+    transition: border-color 0.15s;
+}
+.form-input:focus { border-color: var(--accent); }
+.form-input::placeholder { color: var(--muted); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.form-row.oculto { display: none; }
+.form-hint { font-size: 0.66rem; color: var(--muted); margin-top: 3px; }
+.check-no-recuerdo {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 0.74rem; color: var(--muted); cursor: pointer;
+    margin-bottom: 10px; user-select: none;
+}
+.check-no-recuerdo input[type="checkbox"] { accent-color: var(--accent); width: 13px; height: 13px; cursor: pointer; }
+.form-actions-inline { display: flex; gap: 7px; justify-content: flex-end; margin-top: 10px; }
+.btn-form-ok {
+    padding: 6px 14px; background: var(--green);
+    border: none; border-radius: 6px; color: #000;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.76rem; font-weight: 600; cursor: pointer; transition: background 0.15s;
+}
+.btn-form-ok:hover { background: #22c55e; }
+.btn-form-cancel {
+    padding: 6px 10px; background: none;
+    border: 1px solid var(--border2); border-radius: 6px;
+    color: var(--muted2); font-family: 'DM Sans', sans-serif;
+    font-size: 0.76rem; cursor: pointer; transition: all 0.15s;
+}
+.btn-form-cancel:hover { color: var(--text); border-color: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <a class="logo" href="/dashboard"><span>CONTROL</span>ANIME</a>
+        <button class="collapse-btn" id="collapseBtn" title="Colapsar">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+    </div>
+    <div class="sidebar-nav">
+        <a class="nav-item" href="/dashboard" data-section="inicio">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span class="nav-label">Inicio</span>
+        </a>
+        <a class="nav-item" href="/mi-lista" data-section="mi-lista">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            <span class="nav-label">Mi lista</span>
+        </a>
+        <a class="nav-item" href="/mi-top" data-section="mi-top">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <span class="nav-label">Mi Top 5</span>
+        </a>
+        <a class="nav-item" href="/populares" data-section="populares">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            <span class="nav-label">Tendencias</span>
+        </a>
+        <a class="nav-item" href="/emision" data-section="emision">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+            <span class="nav-label">En emisión</span>
+        </a>
+        <a class="nav-item" href="/ranking" data-section="ranking">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 20 18 10"/><polyline points="12 20 12 4"/><polyline points="6 20 6 14"/></svg>
+            <span class="nav-label">Ranking</span>
+        </a>
+        <a class="nav-item" href="/estadisticas" data-section="estadisticas">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            <span class="nav-label">Estadísticas</span>
+        </a>
+        <a class="nav-item" href="/exportar" data-section="exportar">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span class="nav-label">Exportar</span>
+        </a>
+    </div>
+    <div class="sidebar-footer">
+        <a class="nav-item" href="/configuracion" data-section="configuracion">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span class="nav-label">Configuración</span>
+        </a>
+        <a class="nav-item logout" href="#" onclick="event.preventDefault(); fetch('/logout',{method:'POST'}).finally(()=>location.href='/login')">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            <span class="nav-label">Cerrar sesión</span>
+        </a>
+    </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+    <div class="topbar">
+        <button class="btn-back" onclick="history.back()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+            Volver
+        </button>
+        <span class="tb-sep">/</span>
+        <a class="tb-link" href="/dashboard">Dashboard</a>
+        <span class="tb-sep">/</span>
+        <span class="tb-cur" id="topbarTitulo">Cargando...</span>
+    </div>
+
+    <div class="loading-state" id="loadingState">
+        <div class="spinner"></div>
+        <span>Cargando anime...</span>
+    </div>
+
+    <div id="pageContent" style="display:none">
+        <!-- HERO -->
+        <div class="hero" id="hero">
+            <div class="hero-bg"  id="heroBg"></div>
+            <div class="hero-color-overlay"></div>
+            <div class="hero-fade"></div>
+            <div class="hero-vignette"></div>
+            <div class="hero-content">
+                <img class="poster" id="poster" src="" alt="">
+                <div class="hero-info">
+                    <div class="h-titulo" id="hTitulo"></div>
+                    <div class="h-alt"    id="hAlt"></div>
+                    <div class="badges"   id="hBadges"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BODY -->
+        <div class="page-body">
+            <!-- Col principal -->
+            <div class="col-main">
+                <div class="sec-label">Sinopsis</div>
+                <p class="sinopsis-text clamp" id="sinopsisEl">Sin sinopsis disponible.</p>
+                <button class="btn-toggle-sin" id="btnToggleSin" onclick="toggleSin()">
+                    Leer más
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+
+                <div class="sec-label">Géneros</div>
+                <div class="genres-wrap" id="genresWrap"></div>
+
+                <!-- RESEÑAS -->
+                <div class="resenas-header">
+                    <div class="sec-label" style="margin-bottom:0">Reseñas de la comunidad</div>
+                    <button class="btn-escribir" id="btnEscribir" onclick="toggleForm()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        Escribir reseña
+                    </button>
+                </div>
+
+                <div class="resena-form" id="resenaForm">
+                    <div class="resena-form-sub">Tu puntuación (1–10)</div>
+                    <div style="display:flex;align-items:center;gap:6px;margin-bottom:13px">
+                        <div class="stars-row" id="starsInput"></div>
+                        <span class="star-label" id="starLabel">—</span>
+                    </div>
+                    <textarea class="resena-ta" id="resenaTA"
+                        placeholder="Opinión para la comunidad... (opcional, máx. 600 caracteres)"
+                        maxlength="600"></textarea>
+                    <div class="form-actions">
+                        <button class="btn-cancel" onclick="toggleForm()">Cancelar</button>
+                        <button class="btn-submit" id="btnSubmitResena" onclick="submitResena()">Publicar</button>
+                    </div>
+                </div>
+
+                <div id="resenasList">
+                    <div class="resenas-vacio" id="resenaVacio">
+                        Sé el primero en dejar una reseña.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Col derecha -->
+            <div class="col-side">
+                <div class="action-card">
+                    <div class="ac-label">Mi lista</div>
+                    <div class="estado-pill">
+                        <div class="e-dot" id="eDot"></div>
+                        <span class="e-label" id="eLabel">No está en tu lista</span>
+                    </div>
+                    <div class="btns-grid">
+                        <button class="accion-btn" id="btnVisto" onclick="clickVisto()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                            Visto
+                        </button>
+                        <button class="accion-btn" id="btnPendiente" onclick="setEstado('pendiente')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            Pendiente
+                        </button>
+                        <button class="accion-btn" id="btnLike" onclick="toggleLike()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="likeIcon"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+                            Me gusta
+                        </button>
+                    </div>
+
+                    <!-- Formulario inline de progreso (reemplaza el modal) -->
+                    <div class="visto-form" id="vistoForm">
+                        <div class="visto-form-inner">
+                            <div class="form-group">
+                                <label class="form-label">Episodios vistos</label>
+                                <input class="form-input" type="text" id="inputEps" placeholder="Ej: 1-12 · todos">
+                                <div class="form-hint">Rango (1-24), sueltos (1,3,5) o "todos"</div>
+                            </div>
+                            <label class="check-no-recuerdo">
+                                <input type="checkbox" id="chkNoRecuerdo" onchange="toggleFechas(this.checked)">
+                                <span>No recuerdo las fechas</span>
+                            </label>
+                            <div class="form-row" id="rowFechas">
+                                <div class="form-group">
+                                    <label class="form-label">Inicio</label>
+                                    <input class="form-input" type="date" id="inputFechaIni">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Fin</label>
+                                    <input class="form-input" type="date" id="inputFechaFin">
+                                </div>
+                            </div>
+                            <div class="form-actions-inline">
+                                <button class="btn-form-cancel" onclick="cerrarFormVisto()">Cancelar</button>
+                                <button class="btn-form-ok" onclick="confirmarVisto()">Guardar</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn-quitar" id="btnQuitar" onclick="quitarDeLista()">
+                        Quitar de mi lista
+                    </button>
+                    <div class="ac-feedback" id="acFeedback"></div>
+                    <hr class="ac-divider">
+                    <div class="info-row">
+                        <span class="info-label">Episodios</span>
+                        <span class="info-value" id="infoEps">—</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Estado</span>
+                        <span class="info-value" id="infoEstado">—</span>
+                    </div>
+                    <div class="info-row" id="rowTipo" style="display:none">
+                        <span class="info-label">Tipo</span>
+                        <span class="info-value" id="infoTipo">—</span>
+                    </div>
+                    <div class="info-row" id="rowAnio" style="display:none">
+                        <span class="info-label">Año</span>
+                        <span class="info-value" id="infoAnio">—</span>
+                    </div>
+                    <div class="info-row" id="rowTemporada" style="display:none">
+                        <span class="info-label">Temporada</span>
+                        <span class="info-value" id="infoTemporada">—</span>
+                    </div>
+                    <div class="info-row" id="rowDuracion" style="display:none">
+                        <span class="info-label">Duración ep.</span>
+                        <span class="info-value" id="infoDuracion">—</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Rating global</span>
+                        <span class="info-value" id="infoRating" style="color:var(--accent)">—</span>
+                    </div>
+                    <div class="info-row" id="rowEstudio" style="display:none">
+                        <span class="info-label">Estudio</span>
+                        <span class="info-value" id="infoEstudio">—</span>
+                    </div>
+                </div>
+
+                <!-- Relacionados — estático en columna, sin modal -->
+                <div class="action-card" id="relacionadosPanel" style="display:none;margin-top:16px">
+                    <div class="ac-label">Relacionados</div>
+                    <div id="relacionadosList"></div>
+                </div>
+
+            </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+const animeId   = location.pathname.split('/').pop()
+let anime       = null
+let estadoActual = null
+let likeActivo   = false
+let ratingSelec  = 0
+let sinExpand    = false
+let resenaPropia = null
+let editMode     = false
+
+// ── CSRF ─────────────────────────────────────────────
+function getCsrf() {
+    return document.cookie.split(';')
+        .map(c => c.trim()).find(c => c.startsWith('csrf_token='))
+        ?.split('=')[1] || ''
+}
+function csrfHeaders() {
+    return { 'Content-Type': 'application/json', 'X-CSRF-Token': getCsrf() }
+}
+
+// ── MAPA DE COLORES POR GÉNERO ────────────────────────
+const GENRE_COLORS = {
+    // Acción / intensidad
+    'Acción':         { bg:'rgba(239,68,68,0.12)',  border:'rgba(239,68,68,0.28)',  color:'#f87171' },
+    'Aventura':       { bg:'rgba(249,115,22,0.12)', border:'rgba(249,115,22,0.28)', color:'#fb923c' },
+    'Militar':        { bg:'rgba(239,68,68,0.1)',   border:'rgba(239,68,68,0.22)',  color:'#fca5a5' },
+    'Artes Marciales':{ bg:'rgba(239,68,68,0.12)',  border:'rgba(239,68,68,0.28)',  color:'#f87171' },
+    'Superpoderes':   { bg:'rgba(249,115,22,0.1)',  border:'rgba(249,115,22,0.22)', color:'#fdba74' },
+    'Gore':           { bg:'rgba(127,29,29,0.2)',   border:'rgba(239,68,68,0.22)',  color:'#fca5a5' },
+    'Supervivencia':  { bg:'rgba(239,68,68,0.1)',   border:'rgba(239,68,68,0.2)',   color:'#fca5a5' },
+    // Romance
+    'Romance':        { bg:'rgba(236,72,153,0.12)', border:'rgba(236,72,153,0.28)', color:'#f472b6' },
+    'Girls Love':     { bg:'rgba(236,72,153,0.1)',  border:'rgba(236,72,153,0.22)', color:'#f9a8d4' },
+    'Boys Love':      { bg:'rgba(168,85,247,0.1)',  border:'rgba(168,85,247,0.22)', color:'#c4b5fd' },
+    'Polígono amoroso':{ bg:'rgba(236,72,153,0.1)', border:'rgba(236,72,153,0.2)',  color:'#f9a8d4' },
+    'Harén':          { bg:'rgba(236,72,153,0.08)', border:'rgba(236,72,153,0.18)', color:'#fbb6ce' },
+    'Harén inverso':  { bg:'rgba(168,85,247,0.08)', border:'rgba(168,85,247,0.18)', color:'#d8b4fe' },
+    // Comedia
+    'Comedia':        { bg:'rgba(251,191,36,0.12)', border:'rgba(251,191,36,0.28)', color:'#fbbf24' },
+    'Parodia':        { bg:'rgba(251,191,36,0.1)',  border:'rgba(251,191,36,0.22)', color:'#fcd34d' },
+    'Humor absurdo':  { bg:'rgba(251,191,36,0.1)',  border:'rgba(251,191,36,0.2)',  color:'#fcd34d' },
+    // Fantasía / magia / sobrenatural
+    'Fantasía':       { bg:'rgba(139,92,246,0.12)', border:'rgba(139,92,246,0.28)', color:'#a78bfa' },
+    'Magia':          { bg:'rgba(139,92,246,0.1)',  border:'rgba(139,92,246,0.22)', color:'#c4b5fd' },
+    'Sobrenatural':   { bg:'rgba(139,92,246,0.1)',  border:'rgba(139,92,246,0.22)', color:'#a78bfa' },
+    'Isekai':         { bg:'rgba(139,92,246,0.12)', border:'rgba(139,92,246,0.28)', color:'#a78bfa' },
+    'Mitología':      { bg:'rgba(139,92,246,0.1)',  border:'rgba(139,92,246,0.2)',  color:'#c4b5fd' },
+    'Vampiros':       { bg:'rgba(139,92,246,0.12)', border:'rgba(139,92,246,0.25)', color:'#a78bfa' },
+    'Demonios':       { bg:'rgba(139,92,246,0.1)',  border:'rgba(139,92,246,0.2)',  color:'#c4b5fd' },
+    'Samurái':        { bg:'rgba(139,92,246,0.08)', border:'rgba(139,92,246,0.18)', color:'#c4b5fd' },
+    'Reencarnación':  { bg:'rgba(139,92,246,0.1)',  border:'rgba(139,92,246,0.2)',  color:'#a78bfa' },
+    // Sci-Fi / Tech
+    'Ciencia Ficción':{ bg:'rgba(59,130,246,0.12)', border:'rgba(59,130,246,0.28)', color:'#60a5fa' },
+    'Mecha':          { bg:'rgba(59,130,246,0.1)',  border:'rgba(59,130,246,0.22)', color:'#93c5fd' },
+    'Espacio':        { bg:'rgba(59,130,246,0.1)',  border:'rgba(59,130,246,0.2)',  color:'#93c5fd' },
+    'Viajes en el tiempo':{ bg:'rgba(59,130,246,0.1)', border:'rgba(59,130,246,0.2)', color:'#60a5fa' },
+    // Terror / oscuro
+    'Terror':         { bg:'rgba(127,29,29,0.2)',   border:'rgba(239,68,68,0.2)',   color:'#fca5a5' },
+    'Thriller':       { bg:'rgba(127,29,29,0.15)',  border:'rgba(239,68,68,0.18)',  color:'#fca5a5' },
+    'Psicológico':    { bg:'rgba(109,40,217,0.15)', border:'rgba(109,40,217,0.28)', color:'#c4b5fd' },
+    'Misterio':       { bg:'rgba(99,102,241,0.12)', border:'rgba(99,102,241,0.25)', color:'#a5b4fc' },
+    'Suspenso':       { bg:'rgba(99,102,241,0.1)',  border:'rgba(99,102,241,0.2)',  color:'#a5b4fc' },
+    'Crimen organizado':{ bg:'rgba(127,29,29,0.15)',border:'rgba(239,68,68,0.18)',  color:'#fca5a5' },
+    // Drama / cotidiano
+    'Drama':          { bg:'rgba(20,184,166,0.1)',  border:'rgba(20,184,166,0.22)', color:'#5eead4' },
+    'Vida Cotidiana': { bg:'rgba(74,222,128,0.1)',  border:'rgba(74,222,128,0.2)',  color:'#86efac' },
+    'Escolar':        { bg:'rgba(74,222,128,0.08)', border:'rgba(74,222,128,0.18)', color:'#86efac' },
+    'Trabajo':        { bg:'rgba(20,184,166,0.08)', border:'rgba(20,184,166,0.18)', color:'#5eead4' },
+    'Vida laboral':   { bg:'rgba(20,184,166,0.08)', border:'rgba(20,184,166,0.18)', color:'#5eead4' },
+    // Deportes
+    'Deportes':       { bg:'rgba(16,185,129,0.12)', border:'rgba(16,185,129,0.25)', color:'#6ee7b7' },
+    'Deportes en equipo':{ bg:'rgba(16,185,129,0.1)',border:'rgba(16,185,129,0.2)', color:'#6ee7b7' },
+    'Carreras':       { bg:'rgba(16,185,129,0.1)',  border:'rgba(16,185,129,0.2)',  color:'#6ee7b7' },
+    // Histórico
+    'Histórico':      { bg:'rgba(161,110,60,0.15)', border:'rgba(161,110,60,0.28)', color:'#d4a96a' },
+    // Música / arte
+    'Música':         { bg:'rgba(245,158,11,0.1)',  border:'rgba(245,158,11,0.22)', color:'#fcd34d' },
+    'Artes escénicas':{ bg:'rgba(245,158,11,0.1)',  border:'rgba(245,158,11,0.2)',  color:'#fcd34d' },
+    // Demografías
+    'Shōnen':         { bg:'rgba(249,115,22,0.08)', border:'rgba(249,115,22,0.18)', color:'#fdba74' },
+    'Shōjo':          { bg:'rgba(236,72,153,0.08)', border:'rgba(236,72,153,0.18)', color:'#f9a8d4' },
+    'Seinen':         { bg:'rgba(99,102,241,0.08)', border:'rgba(99,102,241,0.18)', color:'#a5b4fc' },
+    'Josei':          { bg:'rgba(236,72,153,0.08)', border:'rgba(236,72,153,0.18)', color:'#fbcfe8' },
+    'Infantil':       { bg:'rgba(74,222,128,0.08)', border:'rgba(74,222,128,0.18)', color:'#bbf7d0' },
+    'Elenco adulto':  { bg:'rgba(99,102,241,0.08)', border:'rgba(99,102,241,0.18)', color:'#a5b4fc' },
+}
+const GENRE_DEFAULT = { bg:'rgba(255,255,255,0.04)', border:'rgba(255,255,255,0.1)', color:'#888' }
+
+function genreBadgeHTML(nombre) {
+    const c = GENRE_COLORS[nombre] || GENRE_DEFAULT
+    return `<span class="b-genre" style="background:${c.bg};border-color:${c.border};color:${c.color}">${nombre}</span>`
+}
+
+// ── TEMPORADA → etiqueta ──────────────────────────────
+const TEMPORADA_LABEL = { winter:'Invierno', spring:'Primavera', summer:'Verano', fall:'Otoño' }
+
+// ── CARGAR DATOS ──────────────────────────────────────
+async function cargarPagina() {
+    if (!animeId || animeId === 'anime') { mostrarError('ID de anime inválido.'); return }
+
+    // Prefetch desde sessionStorage (venimos del dashboard)
+    try {
+        const prefetch = sessionStorage.getItem('anime_prefetch')
+        if (prefetch) {
+            const a = JSON.parse(prefetch)
+            if (String(a.id) === String(animeId)) {
+                sessionStorage.removeItem('anime_prefetch')
+                anime = a
+                renderAnime(a)
+                document.getElementById('loadingState').style.display = 'none'
+                document.getElementById('pageContent').style.display  = 'block'
+                cargarEstadoYResenas()
+                // Si faltan traducciones en el prefetch, enriquecer en background
+                // El endpoint /animes/{id} traduce sinopsis_es y devuelve genres_es
+                if (!a.sinopsis_es || !a.genres_es) {
+                    _enriquecerTraducciones()
+                }
+                return
+            }
+        }
+    } catch(e) {}
+
+    // Sin prefetch → carga normal
+    try {
+        const [resAnime, resEstado, resResenas] = await Promise.all([
+            fetch(`/animes/${animeId}`),
+            fetch(`/lista/estado/${animeId}`),
+            fetch(`/resenas/${animeId}?page=1`)
+        ])
+        if (resAnime.status === 401) { location.href = '/login'; return }
+        if (!resAnime.ok) { mostrarError('Anime no encontrado.'); return }
+
+        anime = await resAnime.json()
+        const estado = resEstado.ok  ? await resEstado.json()  : {}
+        const rData  = resResenas.ok ? await resResenas.json() : { resenas: [], total_paginas: 1, pagina: 1, total: 0 }
+
+        renderAnime(anime)
+        aplicarEstado(estado)
+        renderResenas(rData)
+        document.getElementById('loadingState').style.display = 'none'
+        document.getElementById('pageContent').style.display  = 'block'
+        cargarRelacionados()
+    } catch(e) {
+        console.error(e)
+        mostrarError('Error de conexión.')
+    }
+}
+
+async function _enriquecerTraducciones() {
+    // Llamado solo cuando el prefetch no tenia sinopsis_es o genres_es.
+    // Hace fetch silencioso al backend — que traduce y persiste en BD — y
+    // actualiza el DOM sin recargar la pagina.
+    try {
+        const res = await fetch(`/animes/${animeId}`)
+        if (!res.ok) return
+        const data = await res.json()
+        // Actualizar solo los campos de traduccion si el backend los trajo
+        if (data.sinopsis_es && !anime.sinopsis_es) {
+            anime.sinopsis_es = data.sinopsis_es
+            document.getElementById('sinopsisEl').textContent = data.sinopsis_es
+        }
+        if (data.genres_es && !anime.genres_es) {
+            anime.genres_es = data.genres_es
+            const genresStr = data.genres_es
+            const genres    = genresStr.split(',').map(g => g.trim()).filter(Boolean)
+            document.getElementById('genresWrap').innerHTML =
+                genres.length
+                    ? genres.map(g => genreBadgeHTML(g)).join('')
+                    : '<span style="color:var(--muted);font-size:.82rem">Sin géneros registrados</span>'
+        }
+        // Rellenar campos del panel lateral que llegaron vacios desde el prefetch
+        if (data.tipo && !anime.tipo) {
+            anime.tipo = data.tipo
+            document.getElementById('rowTipo').style.display = 'flex'
+            document.getElementById('infoTipo').textContent  = data.tipo
+        }
+        if (data.anio && !anime.anio) {
+            anime.anio = data.anio
+            document.getElementById('rowAnio').style.display = 'flex'
+            document.getElementById('infoAnio').textContent  = data.anio
+        }
+        if (data.temporada && !anime.temporada) {
+            const temp = TEMPORADA_LABEL[data.temporada] || data.temporada
+            document.getElementById('rowTemporada').style.display = 'flex'
+            document.getElementById('infoTemporada').textContent  = temp
+        }
+        if (data.duracion && !anime.duracion) {
+            document.getElementById('rowDuracion').style.display = 'flex'
+            document.getElementById('infoDuracion').textContent  = `${data.duracion} min`
+        }
+        if (data.estudio && !anime.estudio) {
+            document.getElementById('rowEstudio').style.display = 'flex'
+            document.getElementById('infoEstudio').textContent  = data.estudio
+        }
+    } catch(e) { console.warn('[enriquecer]', e) }
+}
+
+async function cargarEstadoYResenas() {
+    try {
+        const [resEstado, resResenas] = await Promise.all([
+            fetch(`/lista/estado/${animeId}`),
+            fetch(`/resenas/${animeId}?page=1`)
+        ])
+        if (resEstado.status === 401) { location.href = '/login'; return }
+        const estado = resEstado.ok  ? await resEstado.json()  : {}
+        const rData  = resResenas.ok ? await resResenas.json() : { resenas: [], total_paginas: 1, pagina: 1, total: 0 }
+        aplicarEstado(estado)
+        renderResenas(rData)
+    } catch(e) { console.error(e) }
+    cargarRelacionados()
+}
+
+async function cargarRelacionados() {
+    try {
+        const res = await fetch(`/animes/${animeId}/relacionados`)
+        if (!res.ok) return
+        const data = await res.json()
+        const items = data.relacionados || []
+        if (!items.length) return
+        const panel = document.getElementById('relacionadosPanel')
+        const list  = document.getElementById('relacionadosList')
+        if (!panel || !list) return
+        list.innerHTML = items.map(r => {
+            const poster = r.poster_url
+                ? `<img class="rel-poster" src="${r.poster_url}" alt="${r.titulo}" loading="lazy">`
+                : `<div class="rel-poster-ph">🎬</div>`
+            const rating = r.rating ? `<div class="rel-rating">★ ${r.rating}</div>` : ''
+            return `
+            <div class="rel-item" onclick="location.href='/dashboard/anime/${r.id}'">
+                ${poster}
+                <div class="rel-info">
+                    <div class="rel-titulo">${r.titulo}</div>
+                    <span class="rel-tipo">${r.rel_label}</span>
+                    ${rating}
+                </div>
+            </div>`
+        }).join('')
+        panel.style.display = 'block'
+    } catch(e) { console.error('[relacionados]', e) }
+}
+
+function mostrarError(msg) {
+    document.getElementById('loadingState').innerHTML =
+        `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span style="color:var(--red)">${msg}</span>`
+}
+
+// ── RENDERIZAR ANIME ──────────────────────────────────
+function renderAnime(a) {
+    document.title = `${a.titulo} · ControlAnime`
+    document.getElementById('topbarTitulo').textContent = a.titulo
+
+    // Hero
+    if (a.cover_url) document.getElementById('heroBg').style.backgroundImage = `url(${a.cover_url})`
+    else if (a.poster_url) document.getElementById('heroBg').style.backgroundImage = `url(${a.poster_url})`
+    document.getElementById('poster').src = a.poster_url || ''
+    document.getElementById('poster').alt = a.titulo
+    document.getElementById('hTitulo').textContent = a.titulo
+
+    const alts = [a.titulo_alternativo].filter(Boolean)
+    document.getElementById('hAlt').textContent = alts.join(' · ')
+
+    // Badges hero
+    const estado_label = a.estado === 'current' ? 'En emisión' : a.estado === 'finished' ? 'Finalizado' : a.estado || ''
+    const estado_cls   = a.estado === 'current' ? 'b-current' : 'b-fin'
+    const badges = [
+        a.rating    ? `<span class="badge b-rating">★ ${a.rating}</span>` : '',
+        a.tipo      ? `<span class="badge b-tipo">${a.tipo}</span>`        : '',
+        a.anio      ? `<span class="badge b-anio">${a.anio}</span>`        : '',
+        a.episodios ? `<span class="badge b-eps">${a.episodios} eps</span>` : '',
+        estado_label ? `<span class="badge ${estado_cls}">${estado_label}</span>` : '',
+    ].join('')
+    document.getElementById('hBadges').innerHTML = badges
+
+    // Sinopsis — sinopsis_es del backend (ya traducida), fallback al original en inglés
+    const sinEl = document.getElementById('sinopsisEl')
+    sinEl.textContent = a.sinopsis_es || a.sinopsis || 'Sin sinopsis disponible.'
+
+    // Géneros — usa genres_es (español) si está disponible, fallback a genres
+    const genresStr = a.genres_es || a.genres || ''
+    const genres    = genresStr.split(',').map(g => g.trim()).filter(Boolean)
+    document.getElementById('genresWrap').innerHTML =
+        genres.length
+            ? genres.map(g => genreBadgeHTML(g)).join('')
+            : '<span style="color:var(--muted);font-size:.82rem">Sin géneros registrados</span>'
+
+    // Info lateral — episodios y estado
+    document.getElementById('infoEps').textContent    = a.episodios ? `${a.episodios} episodios` : '—'
+    document.getElementById('infoEstado').textContent = estado_label || '—'
+    document.getElementById('infoRating').textContent = a.rating ? `★ ${a.rating}` : '—'
+
+    // Nuevos campos enriquecidos
+    const setInfo = (rowId, valId, val) => {
+        if (val) {
+            document.getElementById(rowId).style.display = 'flex'
+            document.getElementById(valId).textContent   = val
+        }
+    }
+    setInfo('rowTipo',      'infoTipo',      a.tipo)
+    setInfo('rowAnio',      'infoAnio',      a.anio)
+    setInfo('rowTemporada', 'infoTemporada', TEMPORADA_LABEL[a.temporada] || a.temporada)
+    setInfo('rowDuracion',  'infoDuracion',  a.duracion ? `${a.duracion} min` : null)
+    setInfo('rowEstudio',   'infoEstudio',   a.estudio)
+
+}
+
+// ── APLICAR ESTADO ────────────────────────────────────
+function aplicarEstado(e) {
+    if (e.tipo) setEstadoUI(e.tipo)
+    if (e.like) setLikeUI(true)
+    if (e.resena) resenaPropia = e.resena
+    if (e.episodios_vistos) document.getElementById('inputEps').value      = e.episodios_vistos
+    if (e.fecha_inicio)     document.getElementById('inputFechaIni').value = e.fecha_inicio
+    if (e.fecha_fin)        document.getElementById('inputFechaFin').value  = e.fecha_fin
+}
+
+// ── ACCIONES DE LISTA ─────────────────────────────────
+function toggleFechas(sinFechas) {
+    const row = document.getElementById('rowFechas')
+    row.classList.toggle('oculto', sinFechas)
+    if (sinFechas) {
+        document.getElementById('inputFechaIni').value = ''
+        document.getElementById('inputFechaFin').value = ''
+    }
+}
+
+function clickVisto() {
+    const form   = document.getElementById('vistoForm')
+    const isOpen = form.classList.contains('open')
+    if (isOpen) { cerrarFormVisto(); return }
+    if (!document.getElementById('inputFechaFin').value) {
+        document.getElementById('inputFechaFin').value = new Date().toISOString().split('T')[0]
+    }
+    document.getElementById('chkNoRecuerdo').checked = false
+    document.getElementById('rowFechas').classList.remove('oculto')
+    form.classList.add('open')
+}
+
+function cerrarFormVisto() {
+    document.getElementById('vistoForm').classList.remove('open')
+}
+
+async function confirmarVisto() {
+    const eps = document.getElementById('inputEps').value.trim()
+    const ini = document.getElementById('inputFechaIni').value
+    const fin = document.getElementById('inputFechaFin').value
+    try {
+        const res = await fetch('/lista/agregar', {
+            method: 'POST',
+            headers: csrfHeaders(),
+            body: JSON.stringify({
+                anime_id:         animeId,
+                tipo:             'visto',
+                episodios_vistos: eps || null,
+                fecha_inicio:     ini || null,
+                fecha_fin:        fin || null,
+            })
+        })
+        if (!res.ok) { feedback('Error al guardar', true); return }
+        try { new BroadcastChannel('ca_lista').postMessage({ tipo: 'invalidar' }) } catch(e) {}
+        cerrarFormVisto()
+        setEstadoUI('visto')
+        feedback('✓ Marcado como visto', false)
+    } catch { feedback('Error de conexión', true) }
+}
+
+async function setEstado(tipo) {
+    try {
+        const res = await fetch('/lista/agregar', {
+            method: 'POST',
+            headers: csrfHeaders(),
+            body: JSON.stringify({ anime_id: animeId, tipo })
+        })
+        if (!res.ok) { feedback('Error al guardar', true); return }
+        try { new BroadcastChannel('ca_lista').postMessage({ tipo: 'invalidar' }) } catch(e) {}
+        setEstadoUI(tipo)
+        feedback('✓ Lista actualizada', false)
+    } catch { feedback('Error de conexión', true) }
+}
+
+async function quitarDeLista() {
+    try {
+        const res = await fetch('/lista/eliminar', {
+            method: 'POST',
+            headers: csrfHeaders(),
+            body: JSON.stringify({ anime_id: animeId })
+        })
+        if (!res.ok) { feedback('Error al quitar', true); return }
+        try { new BroadcastChannel('ca_lista').postMessage({ tipo: 'invalidar' }) } catch(e) {}
+        setEstadoUI(null)
+        feedback('Quitado de tu lista', false)
+    } catch { feedback('Error de conexión', true) }
+}
+
+function setEstadoUI(tipo) {
+    estadoActual = tipo
+    document.getElementById('btnVisto').className    = 'accion-btn'
+    document.getElementById('btnPendiente').className = 'accion-btn'
+    const dot    = document.getElementById('eDot')
+    const label  = document.getElementById('eLabel')
+    const quitar = document.getElementById('btnQuitar')
+    if (!tipo) {
+        dot.className   = 'e-dot'
+        label.innerHTML = 'No está en tu lista'
+        quitar.classList.remove('show')
+        return
+    }
+    const cfg = {
+        visto:     { dot:'e-dot visto',    label:'<strong>Marcado como visto</strong>',  btn:'btnVisto',    cls:'on-visto' },
+        pendiente: { dot:'e-dot pendiente',label:'<strong>En pendientes</strong>',        btn:'btnPendiente',cls:'on-pendiente' },
+    }
+    const c = cfg[tipo]
+    if (!c) return
+    dot.className   = c.dot
+    label.innerHTML = c.label
+    document.getElementById(c.btn).className = `accion-btn ${c.cls}`
+    quitar.classList.add('show')
+}
+
+// ── LIKE ──────────────────────────────────────────────
+async function toggleLike() {
+    const nuevoEstado = !likeActivo
+    try {
+        const res = await fetch('/anime-likes', {
+            method: nuevoEstado ? 'POST' : 'DELETE',
+            headers: csrfHeaders(),
+            body: JSON.stringify({ anime_id: animeId })
+        })
+        if (!res.ok) { feedback('Error', true); return }
+        try { new BroadcastChannel('ca_lista').postMessage({ tipo: 'invalidar' }) } catch(e) {}
+        setLikeUI(nuevoEstado)
+        feedback(nuevoEstado ? '❤ Me gusta guardado' : 'Like quitado', false)
+    } catch { feedback('Error de conexión', true) }
+}
+
+function setLikeUI(activo) {
+    likeActivo = activo
+    const btn  = document.getElementById('btnLike')
+    const icon = document.getElementById('likeIcon')
+    btn.className = activo ? 'accion-btn on-like' : 'accion-btn'
+    icon.setAttribute('fill',   activo ? 'var(--like)' : 'none')
+    icon.setAttribute('stroke', activo ? 'var(--like)' : 'currentColor')
+}
+
+function feedback(msg, isErr) {
+    const el = document.getElementById('acFeedback')
+    el.textContent = msg
+    el.className   = 'ac-feedback' + (isErr ? ' err' : '')
+    setTimeout(() => el.textContent = '', 2500)
+}
+
+// ── SINOPSIS TOGGLE ───────────────────────────────────
+function toggleSin() {
+    sinExpand = !sinExpand
+    document.getElementById('sinopsisEl').classList.toggle('clamp', !sinExpand)
+    document.getElementById('btnToggleSin').innerHTML = sinExpand
+        ? `Leer menos <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><polyline points="18 15 12 9 6 15"/></svg>`
+        : `Leer más <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>`
+}
+
+// ── MODAL ─────────────────────────────────────────────
+function cerrarModal() { cerrarFormVisto() }
+
+// ── RESEÑAS ───────────────────────────────────────────
+function initStars() {
+    const wrap = document.getElementById('starsInput')
+    wrap.innerHTML = ''
+    for (let i = 1; i <= 10; i++) {
+        const btn = document.createElement('button')
+        btn.className = 'star-btn'
+        btn.type = 'button'
+        btn.innerHTML = `<svg viewBox="0 0 24 24" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`
+        btn.addEventListener('mouseover', () => highlightStars(i, false))
+        btn.addEventListener('mouseout',  () => highlightStars(ratingSelec, false))
+        btn.addEventListener('click', () => {
+            ratingSelec = i
+            highlightStars(i, false)
+            const labels = ['','Pésimo','Malo','Regular','Flojo','Mediocre','Aceptable','Bueno','Muy bueno','Excelente','Obra maestra']
+            document.getElementById('starLabel').textContent = `${i}/10 — ${labels[i]}`
+        })
+        wrap.appendChild(btn)
+    }
+}
+
+function highlightStars(n) {
+    document.querySelectorAll('#starsInput .star-btn').forEach((btn, i) => btn.classList.toggle('lit', i < n))
+}
+
+function buildStarsSvg(rating, total=10) {
+    let html = ''
+    for (let i = 1; i <= total; i++) {
+        html += `<svg viewBox="0 0 24 24" stroke-width="1.5" class="${i<=rating?'lit':'dim'}"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`
+    }
+    return html
+}
+
+function renderResenas(data) {
+    const list          = Array.isArray(data) ? data : (data.resenas || [])
+    const total         = data.total         || list.length
+    const pagina        = data.pagina        || 1
+    const total_paginas = data.total_paginas || 1
+    const container     = document.getElementById('resenasList')
+    const vacio         = document.getElementById('resenaVacio')
+    container.innerHTML = ''
+    if (!list.length && pagina === 1) { container.appendChild(vacio); return }
+    list.forEach(r => {
+        const initials   = (r.nombre || '?').slice(0,2).toUpperCase()
+        const avatarHTML = r.foto_url ? `<img src="${r.foto_url}" alt="${r.nombre}">` : initials
+        const fecha      = formatDate(r.creado_en)
+        const editadoTxt = r.editado_en ? ' · editado' : ''
+        const ownActions = r.es_propia ? `
+            <div class="r-own-actions">
+                <button class="r-btn edit" onclick="editarResena(${r.id}, ${r.rating}, \`${(r.comentario||'').replace(/\`/g,"'")}\`)">Editar</button>
+                <button class="r-btn"      onclick="eliminarResena(${r.id}, this)">Eliminar</button>
+            </div>` : ''
+        const textoHTML = r.comentario ? `<p class="r-text">${r.comentario}</p>` : ''
+        const item = document.createElement('div')
+        item.className = 'resena-item'
+        item.id = `resena-${r.id}`
+        item.innerHTML = `
+            <div class="resena-top">
+                <div class="resena-user">
+                    <div class="r-avatar">${avatarHTML}</div>
+                    <div>
+                        <div class="r-name">${r.nombre}</div>
+                        <div class="r-date">${fecha}${editadoTxt}</div>
+                    </div>
+                </div>
+                <div class="r-stars">${buildStarsSvg(r.rating)}</div>
+            </div>
+            ${textoHTML}
+            ${ownActions}`
+        container.appendChild(item)
+    })
+    if (total_paginas > 1) {
+        const pag    = document.createElement('div')
+        pag.className = 'resenas-pag'
+        const paginas = new Set([1, total_paginas, pagina, pagina-1, pagina+1].filter(p => p >= 1 && p <= total_paginas))
+        const sorted  = [...paginas].sort((a,b) => a-b)
+        let prev = 0
+        const btns = []
+        for (const p of sorted) {
+            if (p - prev > 1) btns.push(`<span style="padding:0 2px;color:var(--muted)">…</span>`)
+            btns.push(`<button class="resenas-pag-btn${p === pagina ? ' active' : ''}" data-pag="${p}">${p}</button>`)
+            prev = p
+        }
+        pag.innerHTML = `
+            <button class="resenas-pag-btn" data-pag="${pagina-1}" ${pagina<=1?'disabled':''}>‹</button>
+            ${btns.join('')}
+            <button class="resenas-pag-btn" data-pag="${pagina+1}" ${pagina>=total_paginas?'disabled':''}>›</button>`
+        pag.querySelectorAll('[data-pag]').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const p = parseInt(btn.dataset.pag)
+                if (!p || p < 1 || p > total_paginas) return
+                try {
+                    const res = await fetch(`/resenas/${animeId}?page=${p}`)
+                    if (res.ok) renderResenas(await res.json())
+                    document.querySelector('.resenas-header')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                } catch(e) {}
+            })
+        })
+        container.appendChild(pag)
+        const info = document.createElement('div')
+        info.className = 'resenas-pag-info'
+        info.textContent = `${total} reseñas · página ${pagina} de ${total_paginas}`
+        container.appendChild(info)
+    }
+}
+
+function formatDate(iso) {
+    if (!iso) return ''
+    try {
+        const d = new Date(iso)
+        const diff = Date.now() - d.getTime()
+        const mins = Math.floor(diff / 60000)
+        if (mins < 1)  return 'ahora mismo'
+        if (mins < 60) return `hace ${mins} min`
+        const hrs = Math.floor(mins / 60)
+        if (hrs < 24)  return `hace ${hrs}h`
+        const days = Math.floor(hrs / 24)
+        if (days < 30) return `hace ${days} días`
+        return d.toLocaleDateString('es', { day:'numeric', month:'short', year:'numeric' })
+    } catch { return '' }
+}
+
+function toggleForm() {
+    const form = document.getElementById('resenaForm')
+    const abriendo = !form.classList.contains('open')
+    form.classList.toggle('open')
+    if (abriendo) {
+        if (editMode && resenaPropia) {
+            // Edición: cargar contenido existente
+            ratingSelec = resenaPropia.rating
+            highlightStars(ratingSelec)
+            document.getElementById('resenaTA').value = resenaPropia.comentario || ''
+            document.getElementById('starLabel').textContent = `${ratingSelec}/10`
+        } else {
+            // Nueva reseña: siempre en blanco
+            ratingSelec = 0
+            highlightStars(0)
+            document.getElementById('resenaTA').value = ''
+            document.getElementById('starLabel').textContent = '—'
+        }
+    }
+}
+
+function editarResena(id, rating, comentario) {
+    editMode = true
+    resenaPropia = { id, rating, comentario }
+    ratingSelec = rating
+    document.getElementById('resenaTA').value = comentario
+    highlightStars(rating)
+    document.getElementById('starLabel').textContent = `${rating}/10`
+    const form = document.getElementById('resenaForm')
+    form.classList.add('open')
+    form.scrollIntoView({ behavior: 'smooth', block: 'center' })
+}
+
+async function submitResena() {
+    if (!ratingSelec) { alert('Seleccioná una puntuación'); return }
+    const comentario = document.getElementById('resenaTA').value.trim()
+    const btn = document.getElementById('btnSubmitResena')
+    btn.disabled = true
+    try {
+        const res = await fetch('/resenas', {
+            method: 'POST',
+            headers: csrfHeaders(),
+            body: JSON.stringify({ anime_id: animeId, rating: ratingSelec, comentario })
+        })
+        if (!res.ok) { btn.disabled = false; return }
+        const data = await res.json()
+        resenaPropia = { id: data.id, rating: ratingSelec, comentario }
+        editMode = false
+        const r = await fetch(`/resenas/${animeId}?page=1`)
+        if (r.ok) { const d = await r.json(); renderResenas(d) }
+        ratingSelec = 0; highlightStars(0)
+        document.getElementById('resenaTA').value = ''
+        document.getElementById('starLabel').textContent = '—'
+        document.getElementById('resenaForm').classList.remove('open')
+    } catch {}
+    btn.disabled = false
+}
+
+async function eliminarResena(id) {
+    if (!confirm('¿Eliminar tu reseña?')) return
+    try {
+        const res = await fetch(`/resenas/${id}`, { method: 'DELETE', headers: csrfHeaders() })
+        if (!res.ok) return
+        resenaPropia = null
+        const r = await fetch(`/resenas/${animeId}?page=1`)
+        if (r.ok) renderResenas(await r.json())
+    } catch {}
+}
+
+// ── SIDEBAR COLLAPSE ──────────────────────────────────
+;(function() {
+    const sidebar = document.getElementById('sidebar')
+    const btn     = document.getElementById('collapseBtn')
+    if (localStorage.getItem('sidebarCollapsed') === 'true') sidebar.classList.add('collapsed')
+    btn.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed')
+        localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'))
+    })
+})()
+
+// ── INIT ──────────────────────────────────────────────
+initStars()
+cargarPagina()
+</script>
+</body>
+</html>

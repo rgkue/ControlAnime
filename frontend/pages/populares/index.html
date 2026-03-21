@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Populares · ControlAnime</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="icon" type="image/x-icon" href="/static/logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg:           #090909;
+    --surface:      #111111;
+    --surface2:     #181818;
+    --surface3:     #1e1e1e;
+    --border:       #222222;
+    --border2:      #2a2a2a;
+    --accent:       #f97316;
+    --accent-hover: #ea6a0a;
+    --accent-dim:   rgba(249,115,22,0.12);
+    --text:         #e8e8e8;
+    --muted:        #666;
+    --muted2:       #888;
+    --green:        #4ade80;
+    --red:          #f87171;
+    --sidebar-w:         240px;
+    --sidebar-collapsed: 64px;
+    --topbar-h:          58px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'DM Sans', sans-serif; font-size: 14px; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; }
+
+/* ── SIDEBAR ──────────────────────────────────────── */
+.sidebar { width: var(--sidebar-w); background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; transition: width 0.25s; overflow: hidden; flex-shrink: 0; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; }
+.sidebar.collapsed { width: var(--sidebar-collapsed); }
+.sidebar-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 16px; border-bottom: 1px solid var(--border); min-height: 64px; overflow: hidden; }
+.logo { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.06em; color: var(--accent); text-decoration: none; white-space: nowrap; transition: opacity 0.25s; }
+.logo span { color: var(--text); }
+.sidebar.collapsed .logo { opacity: 0; pointer-events: none; width: 0; }
+.collapse-btn { background: none; border: none; color: var(--muted); cursor: pointer; padding: 6px; border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: color 0.25s, background 0.25s, transform 0.25s; flex-shrink: 0; }
+.collapse-btn:hover { color: var(--accent); background: var(--accent-dim); }
+.sidebar.collapsed .collapse-btn { transform: rotate(180deg); }
+.sidebar-nav { flex: 1; padding: 12px 8px; display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
+.nav-item { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 6px; color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 400; white-space: nowrap; transition: color 0.25s, background 0.25s; cursor: pointer; border: none; background: none; width: 100%; }
+.nav-item:hover { color: var(--text); background: var(--surface2); }
+.nav-item.active { color: var(--accent); background: var(--accent-dim); }
+.nav-item.logout:hover { color: #f87171; background: rgba(248,113,113,0.1); }
+.nav-icon { width: 18px; height: 18px; flex-shrink: 0; }
+.nav-label { transition: opacity 0.25s, width 0.25s; overflow: hidden; }
+.sidebar.collapsed .nav-label { opacity: 0; width: 0; }
+.sidebar-footer { padding: 8px 8px 16px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 2px; }
+
+/* ── MAIN ─────────────────────────────────────────── */
+.main { margin-left: var(--sidebar-w); flex: 1; min-height: 100vh; display: flex; flex-direction: column; transition: margin-left 0.25s; }
+.sidebar.collapsed ~ .main { margin-left: var(--sidebar-collapsed); }
+
+/* ── TOPBAR ───────────────────────────────────────── */
+.topbar { position: sticky; top: 0; z-index: 40; height: var(--topbar-h); background: rgba(9,9,9,0.88); backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 36px; gap: 16px; }
+.topbar-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: 0.1em; color: var(--text); }
+.topbar-search { flex: 1; max-width: 360px; position: relative; }
+.topbar-search input { width: 100%; padding: 8px 56px 8px 14px; background: var(--surface2); border: 1px solid var(--border2); border-radius: 8px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.84rem; outline: none; transition: border-color 0.15s; }
+.topbar-search input:focus { border-color: var(--accent); }
+.topbar-search input::placeholder { color: var(--muted); }
+.topbar-search svg { position: absolute; right: 11px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; color: var(--muted); pointer-events: none; }
+.topbar-user { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.topbar-email { font-size: 0.75rem; color: var(--muted); }
+.topbar-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--border2); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 600; color: var(--muted2); flex-shrink: 0; }
+.topbar-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ── BODY ─────────────────────────────────────────── */
+.page-body { padding: 28px 36px 60px; width: 100%; }
+
+/* ── TABS DE GÉNERO ───────────────────────────────── */
+.genero-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 24px; }
+.genero-tab {
+    padding: 6px 16px; border-radius: 20px;
+    border: 1px solid var(--border2);
+    background: var(--surface2); color: var(--muted2);
+    font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 500;
+    cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.genero-tab:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+.genero-tab.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+
+/* ── SECTION HEADER ───────────────────────────────── */
+.sec-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.sec-label { font-family: 'Bebas Neue', sans-serif; font-size: 0.78rem; letter-spacing: 0.14em; color: var(--muted); text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+.sec-label::after { content:''; flex:1; height:1px; background:var(--border); width: 40px; display: inline-block; }
+.sec-count { font-size: 0.73rem; color: var(--muted); }
+
+/* ── GRID ─────────────────────────────────────────── */
+.anime-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+    gap: 14px;
+    margin-bottom: 32px;
+}
+
+/* ── CARD ─────────────────────────────────────────── */
+.anime-card {
+    position: relative; border-radius: 8px; overflow: hidden;
+    background: var(--surface2); cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 1px solid var(--border);
+}
+.anime-card:hover { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(0,0,0,0.55); border-color: var(--border2); }
+.anime-card img { width: 100%; height: 210px; object-fit: cover; display: block; background: var(--surface3); }
+.card-info { padding: 10px 10px 12px; }
+.card-title { font-size: 0.78rem; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+.card-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.card-rating { font-size: 0.71rem; color: var(--accent); font-weight: 600; }
+.card-badge {
+    font-size: 0.62rem; font-weight: 600; padding: 2px 6px;
+    border-radius: 10px; text-transform: uppercase; letter-spacing: 0.04em;
+}
+.badge-tv      { background: rgba(99,102,241,0.15); color: #a5b4fc; }
+.badge-movie   { background: rgba(236,72,153,0.12); color: #f9a8d4; }
+.badge-ova     { background: rgba(245,158,11,0.12); color: #fcd34d; }
+.badge-ona     { background: rgba(20,184,166,0.12); color: #5eead4; }
+.badge-special { background: rgba(107,114,128,0.15); color: #9ca3af; }
+
+/* Posición en top */
+.card-pos {
+    position: absolute; top: 8px; left: 8px;
+    font-family: 'Bebas Neue', sans-serif; font-size: 0.95rem;
+    background: rgba(0,0,0,0.75); backdrop-filter: blur(4px);
+    color: var(--accent); border-radius: 5px; padding: 1px 7px;
+    line-height: 1.4;
+}
+
+/* ── SKELETON ─────────────────────────────────────── */
+.skeleton { background: var(--surface2); border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+.skeleton-img { width: 100%; height: 210px; background: linear-gradient(90deg, var(--surface2) 25%, var(--surface3) 50%, var(--surface2) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; }
+.skeleton-info { padding: 10px; }
+.skeleton-line { height: 10px; background: linear-gradient(90deg, var(--surface2) 25%, var(--surface3) 50%, var(--surface2) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 4px; margin-bottom: 6px; }
+.skeleton-line.short { width: 55%; }
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* ── PAGINACIÓN ───────────────────────────────────── */
+.paginacion {
+    display: flex; align-items: center; justify-content: center;
+    gap: 5px; flex-wrap: wrap; padding: 8px 0 40px;
+}
+.pag-btn {
+    min-width: 36px; height: 36px; padding: 0 8px;
+    border-radius: 8px; border: 1px solid var(--border2);
+    background: var(--surface2); color: var(--muted2);
+    font-family: 'DM Sans', sans-serif; font-size: 0.83rem;
+    cursor: pointer; transition: all 0.15s;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 500;
+}
+.pag-btn:hover:not(:disabled):not(.active) {
+    border-color: var(--accent); color: var(--accent); background: var(--accent-dim);
+}
+.pag-btn.active {
+    background: var(--accent); border-color: var(--accent);
+    color: #000; font-weight: 700;
+}
+.pag-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.pag-sep { color: var(--muted); font-size: 0.82rem; padding: 0 2px; line-height: 36px; }
+
+/* ── EMPTY STATE ──────────────────────────────────── */
+.empty-state { text-align: center; padding: 60px 0; color: var(--muted); }
+.empty-state svg { width: 40px; height: 40px; margin-bottom: 12px; opacity: 0.3; }
+.empty-state p { font-size: 0.88rem; }
+
+/* ── ANIMACIONES ──────────────────────────────────── */
+@keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+.fade-in { animation: fadeUp 0.25s ease forwards; }
+
+/* ── RESPONSIVE ───────────────────────────────────── */
+@media (max-width: 860px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; }
+    .page-body { padding: 20px 16px 48px; }
+    .topbar { padding: 0 16px; }
+    .topbar-email { display: none; }
+    .topbar-search { max-width: none; flex: 1; }
+    .anime-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+    .anime-card img { height: 180px; }
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <a class="logo" href="/dashboard"><span>CONTROL</span>ANIME</a>
+        <button class="collapse-btn" id="collapseBtn" title="Colapsar">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+    </div>
+    <div class="sidebar-nav">
+        <a class="nav-item" href="/dashboard" data-section="inicio">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span class="nav-label">Inicio</span>
+        </a>
+        <a class="nav-item" href="/mi-lista" data-section="mi-lista">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            <span class="nav-label">Mi lista</span>
+        </a>
+        <a class="nav-item" href="/mi-top" data-section="mi-top">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <span class="nav-label">Mi Top 5</span>
+        </a>
+        <a class="nav-item active" href="/populares" data-section="populares">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            <span class="nav-label">Tendencias</span>
+        </a>
+        <a class="nav-item" href="/emision" data-section="emision">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+            <span class="nav-label">En emisión</span>
+        </a>
+        <a class="nav-item" href="/ranking" data-section="ranking">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 20 18 10"/><polyline points="12 20 12 4"/><polyline points="6 20 6 14"/></svg>
+            <span class="nav-label">Ranking</span>
+        </a>
+        <a class="nav-item" href="/estadisticas" data-section="estadisticas">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            <span class="nav-label">Estadísticas</span>
+        </a>
+        <a class="nav-item" href="/exportar" data-section="exportar">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span class="nav-label">Exportar</span>
+        </a>
+    </div>
+    <div class="sidebar-footer">
+        <a class="nav-item" href="/configuracion" data-section="configuracion">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span class="nav-label">Configuración</span>
+        </a>
+        <a class="nav-item logout" href="#" onclick="event.preventDefault(); fetch('/logout',{method:'POST'}).finally(()=>location.href='/login')">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            <span class="nav-label">Cerrar sesión</span>
+        </a>
+    </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+    <div class="topbar">
+        <span class="topbar-title">TENDENCIAS</span>
+        <div class="topbar-search">
+            <input type="text" id="searchInput" placeholder="Buscar anime..." autocomplete="off">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <button id="btnLimpiar" onclick="limpiarBusqueda()" title="Limpiar" style="display:none;position:absolute;right:36px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);padding:2px;line-height:0;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="topbar-user">
+            <span class="topbar-email" id="topbarEmail"></span>
+            <div class="topbar-avatar" id="topbarAvatar"></div>
+        </div>
+    </div>
+
+    <div class="page-body">
+        <!-- Tabs de género -->
+        <div class="genero-tabs" id="generoTabs">
+            <button class="genero-tab active" data-genero="" data-label="Todos">Todos</button>
+            <button class="genero-tab" data-genero="Action"    data-label="Acción">Acción</button>
+            <button class="genero-tab" data-genero="Adventure" data-label="Aventura">Aventura</button>
+            <button class="genero-tab" data-genero="Comedy"    data-label="Comedia">Comedia</button>
+            <button class="genero-tab" data-genero="Drama"     data-label="Drama">Drama</button>
+            <button class="genero-tab" data-genero="Fantasy"   data-label="Fantasía">Fantasía</button>
+            <button class="genero-tab" data-genero="Romance"   data-label="Romance">Romance</button>
+            <button class="genero-tab" data-genero="Sci-Fi"    data-label="Ciencia Ficción">Ciencia Ficción</button>
+            <button class="genero-tab" data-genero="Horror"    data-label="Terror">Terror</button>
+            <button class="genero-tab" data-genero="Mystery"   data-label="Misterio">Misterio</button>
+            <button class="genero-tab" data-genero="Psychological" data-label="Psicológico">Psicológico</button>
+            <button class="genero-tab" data-genero="Shounen"   data-label="Shōnen">Shōnen</button>
+            <button class="genero-tab" data-genero="Seinen"    data-label="Seinen">Seinen</button>
+        </div>
+
+        <!-- Sección header -->
+        <div class="sec-header">
+            <div class="sec-label" id="secLabel">Todos los animes</div>
+            <span class="sec-count" id="secCount"></span>
+        </div>
+
+        <!-- Grid de animes -->
+        <div class="anime-grid" id="animeGrid"></div>
+
+        <!-- Paginación -->
+        <div class="paginacion" id="paginacion" style="display:none"></div>
+    </div>
+</div>
+
+<script>
+// ── Estado ────────────────────────────────────────────
+const PAGE_SIZE   = 28
+let generoActivo  = ''
+let labelActivo   = 'Todos'
+let paginaActual  = 1
+let totalItems    = 0   // estimado para calcular páginas
+let cargando      = false
+let searchTimer   = null
+let queryActual   = ''
+
+// ── CSRF ──────────────────────────────────────────────
+function getCsrf() {
+    return document.cookie.split(';').map(c => c.trim())
+        .find(c => c.startsWith('csrf_token='))?.split('=')[1] || ''
+}
+
+// ── INIT ──────────────────────────────────────────────
+async function init() {
+    // Topbar usuario
+    try {
+        const res = await fetch('/me')
+        if (res.status === 401) { location.href = '/login'; return }
+        const me = await res.json()
+        document.getElementById('topbarEmail').textContent = me.email || ''
+        const av = document.getElementById('topbarAvatar')
+        if (me.foto_perfil) av.innerHTML = `<img src="${me.foto_perfil}" alt="avatar">`
+        else av.textContent = (me.email || '?').slice(0,2).toUpperCase()
+    } catch(e) { location.href = '/login'; return }
+
+    // Primera carga
+    await cargarAnimes(1)
+    initTabs()
+    initSearch()
+}
+
+// ── FETCH ─────────────────────────────────────────────
+async function cargarAnimes(pagina = 1) {
+    if (cargando) return
+    cargando    = true
+    paginaActual = pagina
+    const offset = (pagina - 1) * PAGE_SIZE
+
+    document.getElementById('animeGrid').innerHTML = renderSkeletons(PAGE_SIZE)
+    document.getElementById('paginacion').style.display = 'none'
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+
+    try {
+        let url
+        if (queryActual) {
+            url = `/animes/buscar?q=${encodeURIComponent(queryActual)}`
+        } else if (generoActivo) {
+            url = `/animes/genero?g=${encodeURIComponent(generoActivo)}&offset=${offset}&limit=${PAGE_SIZE}`
+        } else {
+            url = `/animes/top?offset=${offset}&limit=${PAGE_SIZE}`
+        }
+
+        const res   = await fetch(url)
+        const data  = await res.json()
+        const items = data.resultados || []
+
+        renderGrid(items, !generoActivo && !queryActual)
+        actualizarLabel(offset + items.length)
+        renderPaginacion(items.length)
+
+    } catch(e) {
+        console.error(e)
+        document.getElementById('animeGrid').innerHTML = `
+            <div class="empty-state" style="grid-column:1/-1">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <p>Error al cargar. Recarga la página.</p>
+            </div>`
+    }
+    cargando = false
+}
+
+// ── RENDER ────────────────────────────────────────────
+function renderGrid(animes, withPos = false) {
+    const grid = document.getElementById('animeGrid')
+    if (!animes.length) {
+        grid.innerHTML = `
+            <div class="empty-state" style="grid-column:1/-1">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <p>Sin resultados para esta búsqueda.</p>
+            </div>`
+        return
+    }
+    grid.innerHTML = animes.map((a, i) => cardHTML(a, withPos ? i + 1 : null)).join('')
+    grid.classList.add('fade-in')
+    bindCards(grid, animes)
+}
+
+function bindCards(grid, animes) {
+    grid.querySelectorAll('.anime-card').forEach((card, i) => {
+        if (animes[i]) card.addEventListener('click', () => irAAnime(animes[i]))
+    })
+}
+
+function cardHTML(a, pos) {
+    const poster = a.poster_url || ''
+    const badge  = tipoBadge(a.tipo)
+    const posTag = pos ? `<div class="card-pos">#${pos}</div>` : ''
+    return `
+    <div class="anime-card">
+        ${poster ? `<img src="${poster}" alt="${esc(a.titulo)}" loading="lazy">` : `<div style="width:100%;height:210px;background:var(--surface3)"></div>`}
+        ${posTag}
+        <div class="card-info">
+            <div class="card-title">${esc(a.titulo)}</div>
+            <div class="card-meta">
+                ${a.rating ? `<span class="card-rating">★ ${a.rating}</span>` : ''}
+                ${badge}
+            </div>
+        </div>
+    </div>`
+}
+
+function tipoBadge(tipo) {
+    if (!tipo) return ''
+    const map = { TV:'badge-tv', Movie:'badge-movie', OVA:'badge-ova', ONA:'badge-ona', Special:'badge-special' }
+    const cls = map[tipo] || ''
+    return cls ? `<span class="card-badge ${cls}">${tipo}</span>` : ''
+}
+
+function renderSkeletons(n) {
+    return Array.from({length: n}, () => `
+        <div class="skeleton">
+            <div class="skeleton-img"></div>
+            <div class="skeleton-info">
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line short"></div>
+            </div>
+        </div>`).join('')
+}
+
+// ── LABEL Y PAGINACIÓN ────────────────────────────────
+function actualizarLabel(total) {
+    const label = queryActual
+        ? `Resultados para "${queryActual}"`
+        : generoActivo ? labelActivo : 'Todos los animes'
+    document.getElementById('secLabel').textContent = label
+    document.getElementById('secCount').textContent = total > 0 ? `${total}+ animes` : ''
+}
+
+function renderPaginacion(loaded) {
+    const pag = document.getElementById('paginacion')
+    // No mostrar paginación en búsquedas (resultado único)
+    if (queryActual || loaded < PAGE_SIZE) {
+        pag.style.display = 'none'
+        return
+    }
+    pag.style.display = 'flex'
+    const p = paginaActual
+    // Mostrar hasta 7 botones centrados en la página actual
+    const paginas = new Set([1, p-1, p, p+1, p+2].filter(n => n >= 1))
+    const sorted  = [...paginas].sort((a,b) => a-b)
+    let prev = 0, btns = []
+    for (const n of sorted) {
+        if (n - prev > 1) btns.push(`<span class="pag-sep">…</span>`)
+        btns.push(`<button class="pag-btn${n===p?' active':''}" onclick="cargarAnimes(${n})">${n}</button>`)
+        prev = n
+    }
+    // Botón siguiente siempre visible si hay página siguiente
+    const hayMas = loaded >= PAGE_SIZE
+    pag.innerHTML = `
+        <button class="pag-btn" onclick="cargarAnimes(${p-1})" ${p<=1?'disabled':''}>‹</button>
+        ${btns.join('')}
+        ${hayMas ? `<button class="pag-btn" onclick="cargarAnimes(${p+1})">›</button>` : ''}
+    `
+}
+
+// ── TABS ──────────────────────────────────────────────
+function initTabs() {
+    document.querySelectorAll('.genero-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.genero-tab').forEach(t => t.classList.remove('active'))
+            tab.classList.add('active')
+            generoActivo = tab.dataset.genero
+            labelActivo  = tab.dataset.label
+            queryActual  = ''
+            document.getElementById('searchInput').value = ''
+            document.getElementById('btnLimpiar').style.display = 'none'
+            cargarAnimes(1)
+        })
+    })
+}
+
+// ── SEARCH ────────────────────────────────────────────
+function initSearch() {
+    const input   = document.getElementById('searchInput')
+    const btnLimp = document.getElementById('btnLimpiar')
+    input.addEventListener('input', () => {
+        btnLimp.style.display = input.value ? 'block' : 'none'
+        clearTimeout(searchTimer)
+        searchTimer = setTimeout(() => {
+            const q = input.value.trim()
+            if (q === queryActual) return
+            queryActual = q
+            if (!q) { cargarAnimes(1); return }
+            document.querySelectorAll('.genero-tab').forEach(t => t.classList.remove('active'))
+            cargarAnimes(1)
+        }, 260)
+    })
+    input.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+            clearTimeout(searchTimer)
+            const q = input.value.trim()
+            queryActual = q
+            if (!q) {
+                document.querySelector('.genero-tab[data-genero=""]').classList.add('active')
+                generoActivo = ''
+            }
+            cargarAnimes(1)
+        }
+    })
+}
+
+function limpiarBusqueda() {
+    const input = document.getElementById('searchInput')
+    input.value = ''
+    document.getElementById('btnLimpiar').style.display = 'none'
+    queryActual = ''
+    document.querySelector('.genero-tab[data-genero=""]').classList.add('active')
+    document.querySelectorAll('.genero-tab:not([data-genero=""])').forEach(t => t.classList.remove('active'))
+    generoActivo = ''
+    labelActivo  = 'Todos'
+    cargarAnimes(1)
+    input.focus()
+}
+
+// ── NAVEGAR A FICHA ───────────────────────────────────
+function irAAnime(anime) {
+    try { sessionStorage.setItem('anime_prefetch', JSON.stringify(anime)) } catch(e) {}
+    location.href = `/dashboard/anime/${anime.id}`
+}
+
+// ── HELPERS ───────────────────────────────────────────
+function esc(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+}
+
+// ── SIDEBAR COLLAPSE ──────────────────────────────────
+;(function() {
+    const sidebar = document.getElementById('sidebar')
+    const btn     = document.getElementById('collapseBtn')
+    if (localStorage.getItem('sidebarCollapsed') === 'true') sidebar.classList.add('collapsed')
+    btn.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed')
+        localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'))
+    })
+})()
+
+// ── CSS SPIN ──────────────────────────────────────────
+const style = document.createElement('style')
+style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }'
+document.head.appendChild(style)
+
+// ── ARRANCAR ──────────────────────────────────────────
+init()
+</script>
+</body>
+</html>
