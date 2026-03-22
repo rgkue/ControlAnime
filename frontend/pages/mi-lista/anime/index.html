@@ -4,325 +4,482 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mi Lista · ControlAnime</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="icon" type="image/x-icon" href="/static/logo.png">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
-
 :root {
-    --bg:        #0f0f0f;
-    --bg2:       #161616;
-    --bg3:       #1e1e1e;
-    --border:    #2a2a2a;
-    --accent:    #f97316;
-    --accent-d:  #c95e0a;
-    --text:      #e5e5e5;
-    --muted:     #777;
-    --success:   #22c55e;
-    --danger:    #ef4444;
-    --radius:    10px;
+    --bg:           #090909;
+    --surface:      #111111;
+    --surface2:     #181818;
+    --surface3:     #1e1e1e;
+    --border:       #222222;
+    --border2:      #2a2a2a;
+    --accent:       #f97316;
+    --accent-hover: #ea6a0a;
+    --accent-dim:   rgba(249,115,22,0.12);
+    --text:         #e8e8e8;
+    --muted:        #666;
+    --muted2:       #888;
+    --green:        #4ade80;
+    --green-dim:    rgba(74,222,128,0.1);
+    --amber:        #fbbf24;
+    --like:         #ec4899;
+    --like-dim:     rgba(236,72,153,0.1);
+    --red:          #f87171;
+    --sidebar-w:         240px;
+    --sidebar-collapsed: 64px;
+    --topbar-h:          58px;
 }
-
+* { box-sizing: border-box; margin: 0; padding: 0; }
 body {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
     background: var(--bg);
     color: var(--text);
-    font-family: 'DM Sans', system-ui, sans-serif;
-    min-height: 100vh;
+    height: 100dvh;
+    display: flex;
+    overflow: hidden;
 }
 
-/* ── NAV ── */
-.top-nav {
-    position: sticky; top: 0; z-index: 100;
-    background: rgba(15,15,15,.92);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
-    padding: 0 24px;
-    height: 56px;
-    display: flex; align-items: center; gap: 12px;
+/* ── SIDEBAR ── */
+.sidebar {
+    width: var(--sidebar-w);
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    transition: width 0.25s;
+    overflow: hidden;
+    flex-shrink: 0;
+    position: fixed; top: 0; left: 0; bottom: 0;
+    z-index: 100;
 }
-.brand { font-family: 'Bebas Neue', sans-serif; font-weight: 400; font-size: 1.2rem; letter-spacing: .12em; text-transform: uppercase; text-decoration: none; color: var(--text) }
-.brand span { color: var(--accent) }
-.nav-sep { color: var(--border); font-size: 1.2rem; margin: 0 4px }
-.nav-crumb { color: var(--muted); font-size: .85rem; text-decoration: none }
-.nav-crumb:hover { color: var(--text) }
-.nav-crumb.active { color: var(--text) }
+.sidebar.collapsed { width: var(--sidebar-collapsed); }
+.sidebar-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 16px;
+    border-bottom: 1px solid var(--border);
+    min-height: 64px; overflow: hidden;
+}
+.logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px; letter-spacing: 0.06em;
+    color: var(--text);
+    text-decoration: none; white-space: nowrap;
+    transition: opacity 0.25s;
+}
+.logo span { color: var(--accent); }
+.sidebar.collapsed .logo { opacity: 0; pointer-events: none; width: 0; }
+.collapse-btn {
+    background: none; border: none; color: var(--muted);
+    cursor: pointer; padding: 6px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    transition: color 0.25s, background 0.25s, transform 0.25s;
+    flex-shrink: 0;
+}
+.collapse-btn:hover { color: var(--accent); background: var(--accent-dim); }
+.sidebar.collapsed .collapse-btn { transform: rotate(180deg); }
+.sidebar-nav {
+    flex: 1; padding: 12px 8px;
+    display: flex; flex-direction: column; gap: 2px;
+    overflow: hidden;
+}
+.nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 11px 12px; border-radius: 6px;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 14px; font-weight: 400; white-space: nowrap;
+    transition: color 0.25s, background 0.25s;
+    cursor: pointer; border: none; background: none; width: 100%;
+}
+.nav-item:hover { color: var(--text); background: var(--surface2); }
+.nav-item.active { color: var(--text); background: var(--surface2); border-left: 2px solid var(--accent); padding-left: 10px; }
+.nav-item.logout:hover { color: var(--red); background: rgba(248,113,113,0.1); }
+.nav-icon { width: 18px; height: 18px; flex-shrink: 0; }
+.nav-label { transition: opacity 0.25s, width 0.25s; overflow: hidden; }
+.sidebar.collapsed .nav-label { opacity: 0; width: 0; }
+.sidebar-footer {
+    padding: 8px 8px 16px;
+    border-top: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 2px;
+}
+
+/* ── MAIN ── */
+.main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    transition: margin-left 0.25s;
+    overflow: hidden;
+    min-width: 0;
+}
+.sidebar.collapsed ~ .main { margin-left: var(--sidebar-collapsed); }
+
+/* ── TOPBAR ── */
+.topbar {
+    height: var(--topbar-h);
+    background: rgba(9,9,9,0.88);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center;
+    padding: 0 32px; gap: 10px;
+    flex-shrink: 0;
+}
+.btn-back {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.8rem; color: var(--muted2);
+    background: none; border: none; cursor: pointer;
+    padding: 6px 0; transition: color 0.15s; font-family: inherit;
+}
+.btn-back:hover { color: var(--accent); }
+.btn-back svg { width: 14px; height: 14px; }
+.tb-sep  { color: var(--border2); }
+.tb-link { font-size: 0.8rem; color: var(--muted); text-decoration: none; }
+.tb-link:hover { color: var(--accent); }
+.tb-cur  {
+    font-size: 0.8rem; color: var(--text); font-weight: 500;
+    max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 
 /* ── HERO ── */
 .hero {
-    position: relative; height: 220px; overflow: hidden;
+    position: relative; height: 160px; overflow: hidden; flex-shrink: 0;
 }
-.hero-cover {
+.hero-bg {
     position: absolute; inset: 0;
     background-size: cover; background-position: center 20%;
-    filter: brightness(.35) saturate(.8);
+    filter: brightness(0.22) saturate(1.1);
 }
-.hero-gradient {
+.hero-fade {
     position: absolute; inset: 0;
-    background: linear-gradient(to bottom, transparent 30%, var(--bg) 100%);
+    background: linear-gradient(to bottom, transparent 0%, rgba(9,9,9,0.6) 70%, #090909 100%);
 }
 .hero-content {
     position: absolute; bottom: 0; left: 0; right: 0;
-    padding: 0 32px 24px;
-    display: flex; align-items: flex-end; gap: 20px;
+    padding: 0 32px 18px;
+    display: flex; align-items: flex-end; gap: 18px;
 }
 .hero-poster {
-    width: 90px; height: 128px; border-radius: 8px;
-    object-fit: cover; box-shadow: 0 8px 32px rgba(0,0,0,.6);
-    flex-shrink: 0; border: 2px solid rgba(255,255,255,.08);
-    background: var(--bg3);
+    width: 66px; height: 94px; border-radius: 8px;
+    object-fit: cover; flex-shrink: 0;
+    border: 1.5px solid rgba(255,255,255,0.1);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.7);
+    background: var(--surface3);
 }
 .hero-info { flex: 1; min-width: 0 }
 .hero-titulo {
-    font-size: 1.6rem; font-weight: 800; line-height: 1.2;
+    font-size: 1.2rem; font-weight: 600; line-height: 1.2;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     margin-bottom: 6px;
 }
-.hero-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap }
+.hero-meta { display: flex; align-items: center; gap: 7px; flex-wrap: wrap }
 .hero-badge {
-    display: inline-flex; align-items: center; gap: 5px;
-    font-size: .78rem; font-weight: 600; padding: 3px 10px;
-    border-radius: 20px; border: 1px solid var(--border);
-    background: rgba(255,255,255,.06); color: var(--muted);
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 0.72rem; font-weight: 500; padding: 2px 8px;
+    border-radius: 20px; border: 1px solid var(--border2);
+    background: rgba(255,255,255,0.04); color: var(--muted2);
 }
-.hero-badge.rating { color: #fbbf24; border-color: rgba(251,191,36,.3); background: rgba(251,191,36,.08) }
-.hero-badge.eps    { color: var(--text) }
-.hero-badge.estado { text-transform: capitalize }
+.hero-badge.rating { color: var(--amber); border-color: rgba(251,191,36,0.3); background: rgba(251,191,36,0.07) }
 
-/* ── LAYOUT ── */
-.page { max-width: 780px; margin: 0 auto; padding: 28px 24px 60px }
+/* ── SHELL ── */
+.shell { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
 
-/* ── CARDS ── */
-.card {
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 24px; margin-bottom: 16px;
+/* ── BODY 2 columnas ── */
+.body {
+    flex: 1; display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0; overflow: hidden;
 }
-.card-title {
-    font-size: .7rem; font-weight: 700; letter-spacing: .12em;
-    text-transform: uppercase; color: var(--muted); margin-bottom: 20px;
+.col {
+    display: flex; flex-direction: column;
+    gap: 20px; overflow: hidden;
+    padding: 20px 32px 0;
+}
+.col + .col { border-left: 1px solid var(--border); }
+
+/* ── SECTION LABELS ── */
+.sec-label {
+    font-size: 0.68rem; font-weight: 600; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: 10px;
     display: flex; align-items: center; gap: 8px;
 }
-.card-title::after {
-    content: ''; flex: 1; height: 1px; background: var(--border);
-}
+.sec-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
 /* ── ESTADO ── */
-.estado-grid {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+.estado-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.est-btn {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 12px; border-radius: 6px;
+    border: 1px solid var(--border2); background: var(--surface2);
+    cursor: pointer; color: var(--muted);
+    font-size: 0.82rem; font-weight: 400;
+    transition: all 0.15s; white-space: nowrap;
+    font-family: 'DM Sans', sans-serif;
 }
-.estado-btn {
-    display: flex; flex-direction: column; align-items: center; gap: 6px;
-    padding: 14px 10px; border-radius: 8px; border: 1.5px solid var(--border);
-    background: transparent; cursor: pointer; color: var(--muted);
-    font-size: .82rem; font-weight: 600; transition: all .15s;
-}
-.estado-btn .icon { font-size: 1.3rem }
-.estado-btn:hover { border-color: var(--accent); color: var(--text); background: rgba(249,115,22,.06) }
-.estado-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(249,115,22,.1) }
-.estado-btn.active-like    { border-color: #ec4899; color: #ec4899; background: rgba(236,72,153,.1) }
-.estado-btn.active-abandon { border-color: #ef4444; color: #ef4444; background: rgba(239,68,68,.1) }
+.est-btn svg { width: 15px; height: 15px; stroke-width: 2; fill: none; stroke: currentColor; flex-shrink: 0; }
+.est-btn:hover { color: var(--text); background: var(--surface3); }
+.est-btn.av { border-color: var(--green);  color: var(--green);  background: var(--green-dim) }
+.est-btn.ap { border-color: var(--accent); color: var(--accent); background: var(--accent-dim) }
+.est-btn.al { border-color: var(--like);   color: var(--like);   background: var(--like-dim) }
+.est-btn.aa { border-color: var(--red);    color: var(--red);    background: rgba(248,113,113,0.1) }
 
 /* ── PROGRESO ── */
-.progreso-wrap { display: flex; flex-direction: column; gap: 14px }
-.progreso-header { display: flex; justify-content: space-between; align-items: center }
-.progreso-label { font-size: .9rem; color: var(--muted) }
-.progreso-valor { font-size: 1.1rem; font-weight: 700; color: var(--accent) }
-.progreso-total { font-size: .85rem; color: var(--muted); font-weight: 400 }
-.slider-wrap { position: relative }
-.slider {
-    -webkit-appearance: none; appearance: none;
-    width: 100%; height: 6px; border-radius: 3px; outline: none; cursor: pointer;
-    background: var(--border);
+.prog-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+.prog-lbl { font-size: 0.82rem; color: var(--muted2) }
+.prog-num { font-size: 1.05rem; font-weight: 600; color: var(--text) }
+.prog-tot { font-size: 0.78rem; color: var(--muted); font-weight: 400 }
+.track {
+    width: 100%; height: 3px; background: var(--border2);
+    border-radius: 2px; margin-bottom: 10px; cursor: pointer; position: relative;
 }
-.slider::-webkit-slider-thumb {
-    -webkit-appearance: none; appearance: none;
-    width: 18px; height: 18px; border-radius: 50%;
-    background: var(--accent); cursor: pointer;
-    box-shadow: 0 0 0 3px rgba(249,115,22,.2);
-    transition: box-shadow .15s;
-}
-.slider::-webkit-slider-thumb:hover { box-shadow: 0 0 0 5px rgba(249,115,22,.3) }
-.slider::-moz-range-thumb {
-    width: 18px; height: 18px; border-radius: 50%;
-    background: var(--accent); cursor: pointer; border: none;
-}
-.eps-inputs { display: flex; align-items: center; gap: 12px; margin-top: 4px }
-.eps-input-wrap {
-    display: flex; align-items: center; gap: 8px;
-    background: var(--bg3); border: 1px solid var(--border);
-    border-radius: 8px; padding: 8px 14px;
-    font-size: .9rem; color: var(--muted);
-}
-.eps-input {
-    background: none; border: none; outline: none;
-    color: var(--text); font-size: .95rem; font-weight: 600;
-    width: 48px; text-align: center;
-}
-.eps-input::-webkit-outer-spin-button,
-.eps-input::-webkit-inner-spin-button { -webkit-appearance: none }
-.btn-eps {
+.fill { height: 3px; background: var(--accent); border-radius: 2px; width: 0% }
+.eps-row { display: flex; align-items: center; gap: 8px }
+.step-btn {
     width: 28px; height: 28px; border-radius: 6px;
-    border: 1px solid var(--border); background: var(--bg3);
-    color: var(--text); cursor: pointer; font-size: 1rem;
+    border: 1px solid var(--border2); background: var(--surface2);
+    color: var(--muted2); cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    transition: all .1s;
+    font-size: 15px; flex-shrink: 0;
+    transition: all 0.15s; font-family: inherit;
 }
-.btn-eps:hover { border-color: var(--accent); color: var(--accent) }
+.step-btn:hover { border-color: var(--accent); color: var(--accent) }
+.eps-disp {
+    flex: 1; text-align: center;
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: 6px; padding: 6px 10px;
+    font-size: 0.82rem; color: var(--muted2);
+}
+.eps-disp b { color: var(--text); font-weight: 600 }
+
+/* ── FICHA LINK ── */
+.ficha-link {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 12px; background: var(--surface2);
+    border: 1px solid var(--border2); border-radius: 6px;
+    text-decoration: none; color: var(--muted2);
+    font-size: 0.82rem; transition: all 0.15s;
+}
+.ficha-link:hover { border-color: var(--accent); color: var(--accent) }
+.ficha-arr { transition: transform 0.15s }
+.ficha-link:hover .ficha-arr { transform: translateX(3px) }
 
 /* ── FECHAS ── */
-.fechas-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px }
-@media (max-width: 560px) { .fechas-grid { grid-template-columns: 1fr 1fr } }
-.fecha-field { display: flex; flex-direction: column; gap: 6px }
-.fecha-label { font-size: .75rem; color: var(--muted); font-weight: 600; letter-spacing: .04em }
-.fecha-input {
-    background: var(--bg3); border: 1px solid var(--border);
-    color: var(--text); border-radius: 8px; padding: 9px 12px;
-    font-size: .88rem; outline: none; width: 100%;
-    transition: border-color .15s; font-family: inherit;
+.fechas-col { display: flex; flex-direction: column; gap: 10px }
+.f-row { display: flex; flex-direction: column; gap: 4px }
+.f-lbl { font-size: 0.72rem; color: var(--muted); font-weight: 500; letter-spacing: 0.03em }
+.f-inp {
+    background: var(--surface2); border: 1px solid var(--border2);
+    color: var(--text); border-radius: 6px; padding: 8px 10px;
+    font-size: 0.82rem; outline: none; width: 100%;
+    font-family: 'DM Sans', sans-serif; transition: border-color 0.15s;
 }
-.fecha-input:focus { border-color: var(--accent) }
-.fecha-input::-webkit-calendar-picker-indicator { filter: invert(.5) }
-.fecha-clear {
-    background: none; border: none; color: var(--muted);
-    cursor: pointer; font-size: .75rem; text-align: left;
-    padding: 0; transition: color .15s;
-}
-.fecha-clear:hover { color: var(--danger) }
+.f-inp:focus { border-color: var(--accent) }
+.f-inp::-webkit-calendar-picker-indicator { filter: invert(0.4); cursor: pointer }
 
 /* ── RESEÑA ── */
-.resena-wrap { display: flex; flex-direction: column; gap: 14px }
-.rating-stars { display: flex; gap: 6px }
-.star {
-    font-size: 1.4rem; cursor: pointer; color: var(--border);
-    transition: color .1s, transform .1s;
-    background: none; border: none; padding: 0;
+.stars-row { display: flex; gap: 3px; align-items: center; margin-bottom: 6px }
+.star { font-size: 15px; color: var(--border2); cursor: pointer; transition: color 0.1s; line-height: 1; background: none; border: none; padding: 0; }
+.star.on { color: var(--amber) }
+.rating-val { font-size: 0.75rem; color: var(--muted); margin-left: 5px; min-width: 32px }
+.jikan-note { font-size: 0.68rem; color: var(--muted); display: flex; align-items: center; gap: 5px; margin-bottom: 10px; opacity: 0.7; }
+.jikan-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+.resena-ta {
+    flex: 1; width: 100%;
+    background: var(--surface2); border: 1px solid var(--border2);
+    color: var(--text); border-radius: 6px; padding: 10px 12px;
+    font-size: 0.82rem; font-family: 'DM Sans', sans-serif; resize: none;
+    outline: none; line-height: 1.6; transition: border-color 0.15s; min-height: 80px;
 }
-.star:hover, .star.active { color: #fbbf24; transform: scale(1.15) }
-.resena-texto {
-    background: var(--bg3); border: 1px solid var(--border);
-    color: var(--text); border-radius: 8px; padding: 12px 14px;
-    font-size: .9rem; font-family: inherit; resize: vertical;
-    min-height: 90px; outline: none; transition: border-color .15s;
-    line-height: 1.6;
-}
-.resena-texto:focus { border-color: var(--accent) }
-.resena-meta { font-size: .75rem; color: var(--muted) }
+.resena-ta:focus { border-color: var(--accent) }
+.resena-ta::placeholder { color: var(--muted) }
+.resena-meta { font-size: 0.7rem; color: var(--muted); margin-top: 5px }
 
-/* ── ACCIONES ── */
-.acciones {
-    display: flex; gap: 12px; flex-wrap: wrap;
-    position: sticky; bottom: 0; z-index: 10;
-    background: linear-gradient(to top, var(--bg) 80%, transparent);
-    padding: 16px 0 0; margin-top: 8px;
+/* ── BOTTOM BAR ── */
+.bottom-bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 32px 16px;
+    flex-shrink: 0;
+    border-top: 1px solid var(--border);
+    background: rgba(9,9,9,0.6);
 }
 .btn {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 11px 22px; border-radius: 8px;
-    font-size: .88rem; font-weight: 700; cursor: pointer;
-    border: none; transition: all .15s; text-decoration: none;
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 18px; border-radius: 6px;
+    font-size: 0.82rem; font-weight: 500; cursor: pointer;
+    border: none; transition: all 0.15s; font-family: 'DM Sans', sans-serif;
+    text-decoration: none;
 }
+.btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; flex-shrink: 0 }
 .btn-primary { background: var(--accent); color: #000 }
-.btn-primary:hover { background: var(--accent-d) }
-.btn-secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border) }
-.btn-secondary:hover { border-color: var(--accent); color: var(--accent) }
-.btn-danger { background: rgba(239,68,68,.1); color: var(--danger); border: 1px solid rgba(239,68,68,.3) }
-.btn-danger:hover { background: rgba(239,68,68,.2) }
-.btn:disabled { opacity: .5; cursor: not-allowed }
+.btn-primary svg { stroke: #000 }
+.btn-primary:hover { background: var(--accent-hover) }
+.btn-secondary { background: var(--surface2); color: var(--muted2); border: 1px solid var(--border2) }
+.btn-secondary:hover { color: var(--text); border-color: var(--muted) }
+.btn-danger { background: rgba(248,113,113,0.08); color: var(--red); border: 1px solid rgba(248,113,113,0.22) }
+.btn-danger:hover { background: rgba(248,113,113,0.15) }
+.btn:disabled { opacity: 0.45; cursor: not-allowed }
+.spacer { flex: 1 }
 
 /* ── TOAST ── */
 .toast {
-    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px);
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: 10px; padding: 12px 20px;
-    font-size: .88rem; font-weight: 600; opacity: 0;
-    transition: all .25s; z-index: 999; white-space: nowrap;
-    box-shadow: 0 8px 32px rgba(0,0,0,.4);
-    pointer-events: none;
+    position: fixed; bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(16px);
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: 8px; padding: 10px 18px;
+    font-size: 0.82rem; font-weight: 500; opacity: 0;
+    transition: all 0.22s; z-index: 999; white-space: nowrap;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5); pointer-events: none;
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0) }
-.toast.ok   { border-color: var(--success); color: var(--success) }
-.toast.err  { border-color: var(--danger);  color: var(--danger) }
+.toast.ok  { border-color: var(--green); color: var(--green) }
+.toast.err { border-color: var(--red);   color: var(--red) }
 
-/* ── ESTADO VACÍO / LOADING ── */
-.loader {
-    display: flex; align-items: center; justify-content: center;
-    min-height: 300px; color: var(--muted); font-size: .9rem;
-    flex-direction: column; gap: 14px;
-}
-.spinner {
-    width: 32px; height: 32px; border: 3px solid var(--border);
-    border-top-color: var(--accent); border-radius: 50%;
-    animation: spin .7s linear infinite;
-}
+/* ── LOADER ── */
+.loader { display: flex; align-items: center; justify-content: center; flex: 1; color: var(--muted); font-size: 0.88rem; flex-direction: column; gap: 12px; }
+.spinner { width: 28px; height: 28px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg) } }
-.not-in-list {
-    text-align: center; padding: 40px 20px; color: var(--muted);
-}
-.not-in-list .icon { font-size: 2.5rem; margin-bottom: 12px }
-.not-in-list p { font-size: 1rem; color: var(--text); margin-bottom: 6px }
-.not-in-list span { font-size: .85rem }
 
-/* ── LINK FICHA ── */
-.ficha-link {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 16px; background: var(--bg3);
-    border: 1px solid var(--border); border-radius: 8px;
-    text-decoration: none; color: var(--text); transition: all .15s;
-    font-size: .88rem;
-}
-.ficha-link:hover { border-color: var(--accent); color: var(--accent) }
-.ficha-link-label { color: var(--muted); font-size: .78rem; display: block; margin-bottom: 2px }
+/* ── NO EN LISTA ── */
+.not-in-list { text-align: center; padding: 40px 20px; color: var(--muted); grid-column: 1 / -1; }
+.not-in-list p { font-size: 0.95rem; color: var(--text); margin-bottom: 6px }
+
 /* ── MODAL ── */
 .modal-overlay {
     position: fixed; inset: 0; z-index: 500;
-    background: rgba(0,0,0,.7); backdrop-filter: blur(4px);
+    background: rgba(0,0,0,0.75); backdrop-filter: blur(4px);
     display: flex; align-items: center; justify-content: center;
-    opacity: 0; pointer-events: none; transition: opacity .2s;
+    opacity: 0; pointer-events: none; transition: opacity 0.2s;
 }
 .modal-overlay.open { opacity: 1; pointer-events: all }
-.modal {
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: 14px; padding: 32px 28px; max-width: 360px; width: 90%;
-    text-align: center; transform: scale(.95); transition: transform .2s;
-}
+.modal { background: var(--surface2); border: 1px solid var(--border2); border-radius: 12px; padding: 28px 24px; max-width: 340px; width: 90%; text-align: center; transform: scale(0.95); transition: transform 0.2s; }
 .modal-overlay.open .modal { transform: scale(1) }
-.modal-icon { font-size: 2.2rem; margin-bottom: 12px }
-.modal-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px }
-.modal-desc { font-size: .87rem; color: var(--muted); margin-bottom: 24px; line-height: 1.5 }
-.modal-btns { display: flex; gap: 10px; justify-content: center }
+.modal-icon { font-size: 2rem; margin-bottom: 10px }
+.modal-title { font-size: 1rem; font-weight: 600; margin-bottom: 7px }
+.modal-desc { font-size: 0.82rem; color: var(--muted2); margin-bottom: 22px; line-height: 1.5 }
+.modal-btns { display: flex; gap: 9px; justify-content: center }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 600px) {
+    .sidebar { display: none }
+    .main { margin-left: 0 }
+    body { overflow: auto; height: auto }
+    .shell { overflow: visible }
+    .body { grid-template-columns: 1fr }
+    .col { padding: 16px }
+    .col + .col { border-left: none; border-top: 1px solid var(--border) }
+    .bottom-bar { flex-wrap: wrap; padding: 12px 16px 20px }
+    .spacer { display: none }
+}
 </style>
 </head>
 <body>
 
-<!-- NAV -->
-<nav class="top-nav">
-    <a class="brand" href="/dashboard"><span>CONTROL</span>ANIME</a>
-    <span class="nav-sep">/</span>
-    <a class="nav-crumb" href="/mi-lista">Mi Lista</a>
-    <span class="nav-sep">/</span>
-    <span class="nav-crumb active" id="navTitulo">Cargando…</span>
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <a class="logo" href="/dashboard"><span>CONTROL</span>ANIME</a>
+        <button class="collapse-btn" id="collapseBtn" title="Colapsar">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+    </div>
+    <div class="sidebar-nav">
+        <a class="nav-item" href="/dashboard">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span class="nav-label">Inicio</span>
+        </a>
+        <a class="nav-item active" href="/mi-lista">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            <span class="nav-label">Mi lista</span>
+        </a>
+        <a class="nav-item" href="/mi-top">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <span class="nav-label">Mi Top 5</span>
+        </a>
+        <a class="nav-item" href="/populares">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            <span class="nav-label">Tendencias</span>
+        </a>
+        <a class="nav-item" href="/emision">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+            <span class="nav-label">En emisión</span>
+        </a>
+        <a class="nav-item" href="/ranking">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 20 18 10"/><polyline points="12 20 12 4"/><polyline points="6 20 6 14"/></svg>
+            <span class="nav-label">Ranking</span>
+        </a>
+        <a class="nav-item" href="/estadisticas">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+            <span class="nav-label">Estadísticas</span>
+        </a>
+        <a class="nav-item" href="/exportar">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span class="nav-label">Exportar</span>
+        </a>
+    </div>
+    <div class="sidebar-footer">
+        <a class="nav-item" href="/configuracion">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span class="nav-label">Configuración</span>
+        </a>
+        <a class="nav-item logout" href="#" onclick="event.preventDefault();fetch('/logout',{method:'POST'}).finally(()=>location.href='/login')">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            <span class="nav-label">Cerrar sesión</span>
+        </a>
+    </div>
 </nav>
 
-<!-- HERO -->
-<div class="hero" id="hero">
-    <div class="hero-cover" id="heroCover"></div>
-    <div class="hero-gradient"></div>
-    <div class="hero-content">
-        <img class="hero-poster" id="heroPoster" src="" alt="">
-        <div class="hero-info">
-            <div class="hero-titulo" id="heroTitulo">—</div>
-            <div class="hero-meta" id="heroMeta"></div>
+<!-- MAIN -->
+<div class="main">
+
+    <div class="topbar">
+        <button class="btn-back" onclick="history.back()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+            Volver
+        </button>
+        <span class="tb-sep">/</span>
+        <a class="tb-link" href="/mi-lista">Mi Lista</a>
+        <span class="tb-sep">/</span>
+        <span class="tb-cur" id="navTitulo">Cargando…</span>
+    </div>
+
+    <div class="hero" id="hero">
+        <div class="hero-bg" id="heroCover"></div>
+        <div class="hero-fade"></div>
+        <div class="hero-content">
+            <img class="hero-poster" id="heroPoster" src="" alt="">
+            <div class="hero-info">
+                <div class="hero-titulo" id="heroTitulo">—</div>
+                <div class="hero-meta" id="heroMeta"></div>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- MAIN -->
-<main class="page" id="mainPage">
-    <div class="loader"><div class="spinner"></div><span>Cargando datos…</span></div>
-</main>
+    <div class="shell">
+        <div class="body" id="mainBody">
+            <div class="loader"><div class="spinner"></div><span>Cargando datos…</span></div>
+        </div>
+        <div class="bottom-bar" id="bottomBar" style="display:none">
+            <button class="btn btn-primary" id="btnGuardar" onclick="guardar()">
+                <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                Guardar cambios
+            </button>
+            <button class="btn btn-secondary" onclick="history.back()">← Volver</button>
+            <div class="spacer"></div>
+            <button class="btn btn-danger" onclick="confirmarEliminar()">
+                <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+                Quitar de lista
+            </button>
+        </div>
+    </div>
+
+</div>
 
 <div class="toast" id="toast"></div>
 
-<!-- Modal confirmación -->
 <div class="modal-overlay" id="modalOverlay">
     <div class="modal">
         <div class="modal-icon">🗑</div>
@@ -336,20 +493,21 @@ body {
 </div>
 
 <script>
-// ── Estado ────────────────────────────────────────────────────────────────────
 const animeId = location.pathname.replace(/\/$/, '').split('/').at(-1)
-let data = null          // respuesta completa del backend
-let dirty = false        // hay cambios sin guardar
-let resenaRating = 0
-let guardando = false
+let data = null, dirty = false, resenaRating = 0, guardando = false
 
-// ── CSRF — lee la cookie csrf_token (no HttpOnly) ────────────────────────────
+// ── Sidebar collapse ──────────────────────────────────
+document.getElementById('collapseBtn').addEventListener('click', () => {
+    document.getElementById('sidebar').classList.toggle('collapsed')
+})
+
+// ── CSRF ──────────────────────────────────────────────
 function csrf() {
     const match = document.cookie.match(/(?:^|;\s*)csrf_token=([^;]+)/)
     return match ? { 'X-CSRF-Token': decodeURIComponent(match[1]) } : {}
 }
 
-// ── Toast ─────────────────────────────────────────────────────────────────────
+// ── Toast ─────────────────────────────────────────────
 let toastTimer = null
 function toast(msg, tipo = 'ok') {
     const el = document.getElementById('toast')
@@ -359,7 +517,7 @@ function toast(msg, tipo = 'ok') {
     toastTimer = setTimeout(() => el.classList.remove('show'), 2800)
 }
 
-// ── Fetch inicial ─────────────────────────────────────────────────────────────
+// ── Cargar ────────────────────────────────────────────
 async function cargar() {
     try {
         const res = await fetch(`/lista/detalle/${animeId}`)
@@ -367,315 +525,241 @@ async function cargar() {
         if (!res.ok) throw new Error(res.status)
         data = await res.json()
         renderHero()
-        renderMain()
-    } catch (e) {
-        document.getElementById('mainPage').innerHTML =
-            `<div class="loader"><span style="color:var(--danger)">Error al cargar. <a href="/dashboard/mi-lista" style="color:var(--accent)">Volver</a></span></div>`
+        renderBody()
+    } catch(e) {
+        document.getElementById('mainBody').innerHTML =
+            `<div class="loader"><span style="color:var(--red)">Error al cargar. <a href="/mi-lista" style="color:var(--accent)">Volver</a></span></div>`
     }
 }
 
-// ── Hero ──────────────────────────────────────────────────────────────────────
+// ── Hero ──────────────────────────────────────────────
 function renderHero() {
     const a = data.anime
     document.title = `${a.titulo} · Mi Lista · ControlAnime`
     document.getElementById('navTitulo').textContent = a.titulo
     document.getElementById('heroPoster').src = a.poster_url || ''
     document.getElementById('heroPoster').alt = a.titulo
-    if (a.cover_url) document.getElementById('heroCover').style.backgroundImage = `url('${a.cover_url}')`
+    if (a.cover_url) document.getElementById('heroCover').style.backgroundImage = `url('${esc(a.cover_url)}')`
     document.getElementById('heroTitulo').textContent = a.titulo
-
-    const meta = document.getElementById('heroMeta')
     const badges = []
     if (a.rating)    badges.push(`<span class="hero-badge rating">★ ${a.rating}</span>`)
-    if (a.episodios) badges.push(`<span class="hero-badge eps">${a.episodios} eps</span>`)
-    if (a.estado)    badges.push(`<span class="hero-badge estado">${a.estado}</span>`)
+    if (a.episodios) badges.push(`<span class="hero-badge">${a.episodios} eps</span>`)
+    if (a.estado)    badges.push(`<span class="hero-badge" style="text-transform:capitalize">${a.estado}</span>`)
     if (data.entrada?.agregado_en)
-        badges.push(`<span class="hero-badge">📅 Agregado ${fmtFecha(data.entrada.agregado_en)}</span>`)
-    meta.innerHTML = badges.join('')
+        badges.push(`<span class="hero-badge">📅 ${fmtFecha(data.entrada.agregado_en)}</span>`)
+    document.getElementById('heroMeta').innerHTML = badges.join('')
 }
 
-// ── Main ──────────────────────────────────────────────────────────────────────
-function renderMain() {
-    const page = document.getElementById('mainPage')
-    const e = data.entrada
-    const a = data.anime
+// ── Body ──────────────────────────────────────────────
+function renderBody() {
+    const body = document.getElementById('mainBody')
+    const bottom = document.getElementById('bottomBar')
+    const e = data.entrada, a = data.anime
 
     if (!e) {
-        page.innerHTML = `
+        body.innerHTML = `
         <div class="not-in-list">
-            <div class="icon">📋</div>
             <p>Este anime no está en tu lista</p>
             <span>Agrégalo desde su ficha</span>
         </div>
-        <div style="margin-top:20px">
+        <div style="grid-column:1/-1;padding:0 32px">
             <a href="/dashboard/anime/${animeId}" class="ficha-link">
-                <div><span class="ficha-link-label">Ver ficha completa</span>${esc(a.titulo)}</div>
-                <span>→</span>
+                <span>Ver ficha completa</span><span class="ficha-arr">→</span>
             </a>
         </div>`
         return
     }
 
-    const eps    = a.episodios || 0
+    bottom.style.display = 'flex'
+    const eps = a.episodios || 0
     const vistos = parseInt(e.episodios_vistos) || 0
-    const tipo   = e.tipo || ''
-    const like   = data.like || false
+    const tipo = e.tipo || ''
+    const like = data.like || false
     const resena = data.resena
+    resenaRating = resena?.rating || 0
+    const pct = eps > 0 ? ((vistos / eps) * 100).toFixed(1) : 0
 
-    page.innerHTML = `
-
-    <!-- ESTADO -->
-    <div class="card">
-        <div class="card-title">Estado en mi lista</div>
-        <div class="estado-grid">
-            <button class="estado-btn ${tipo==='visto'?'active':''}" data-tipo="visto" id="btnVisto">
-                <span class="icon">✓</span>Visto
-            </button>
-            <button class="estado-btn ${tipo==='pendiente'?'active':''}" data-tipo="pendiente" id="btnPendiente">
-                <span class="icon">⏳</span>Pendiente
-            </button>
-            <button class="estado-btn ${like?'active-like':''}" id="btnLike">
-                <span class="icon">${like?'❤️':'🤍'}</span>Me gusta
-            </button>
+    body.innerHTML = `
+    <div class="col">
+        <div>
+            <div class="sec-label">Estado en mi lista</div>
+            <div class="estado-grid">
+                <button class="est-btn ${tipo==='visto'?'av':''}" data-tipo="visto">
+                    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Visto
+                </button>
+                <button class="est-btn ${tipo==='pendiente'?'ap':''}" data-tipo="pendiente">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Pendiente
+                </button>
+                <button class="est-btn ${like?'al':''}" id="btnLike">
+                    <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Me gusta
+                </button>
+                <button class="est-btn ${tipo==='abandonado'?'aa':''}" data-tipo="abandonado">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>Abandonado
+                </button>
+            </div>
         </div>
-        ${tipo === 'pendiente' || tipo === 'abandonado' ? `
-        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
-            <button class="estado-btn ${tipo==='abandonado'?'active-abandon':''}" id="btnAbandonar" data-tipo="abandonado"
-                style="width:100%;justify-content:center;gap:8px;${tipo==='abandonado'?'border-color:#ef4444;color:#ef4444;background:rgba(239,68,68,.08)':''}">
-                <span class="icon">🚫</span>${tipo==='abandonado'?'Abandonado':'Marcar como abandonado'}
-            </button>
+
+        ${eps > 0 ? `
+        <div>
+            <div class="sec-label">Progreso</div>
+            <div class="prog-header">
+                <span class="prog-lbl">Episodios vistos</span>
+                <span class="prog-num" id="progresoValor">${vistos}<span class="prog-tot"> / ${eps}</span></span>
+            </div>
+            <div class="track" id="trackEps"><div class="fill" id="fillEps" style="width:${pct}%"></div></div>
+            <div class="eps-row">
+                <button class="step-btn" id="btnEpsMinus">−</button>
+                <div class="eps-disp"><b id="epsNum">${vistos}</b> / ${eps}</div>
+                <button class="step-btn" id="btnEpsPlus">+</button>
+            </div>
         </div>` : ''}
+
+        <a href="/dashboard/anime/${animeId}" class="ficha-link">
+            <span>Ver ficha completa del anime</span>
+            <span class="ficha-arr">→</span>
+        </a>
     </div>
 
-    <!-- PROGRESO -->
-    ${eps > 0 ? `
-    <div class="card">
-        <div class="card-title">Progreso</div>
-        <div class="progreso-wrap">
-            <div class="progreso-header">
-                <span class="progreso-label">Episodios vistos</span>
-                <span class="progreso-valor" id="progresoValor">${vistos}
-                    <span class="progreso-total">/ ${eps}</span>
-                </span>
-            </div>
-            <input type="range" class="slider" id="sliderEps"
-                min="0" max="${eps}" value="${vistos}" step="1">
-            <div class="eps-inputs">
-                <button class="btn-eps" id="btnEpsMinus">−</button>
-                <div class="eps-input-wrap">
-                    <input type="number" class="eps-input" id="epsInput"
-                        min="0" max="${eps}" value="${vistos}">
-                    <span>/ ${eps}</span>
+    <div class="col">
+        <div>
+            <div class="sec-label">Fechas</div>
+            <div class="fechas-col">
+                <div class="f-row">
+                    <label class="f-lbl">Inicio</label>
+                    <input type="date" class="f-inp" id="fechaInicio" value="${e.fecha_inicio||''}">
                 </div>
-                <button class="btn-eps" id="btnEpsPlus">+</button>
-            </div>
-        </div>
-    </div>` : ''}
-
-    <!-- FECHAS -->
-    <div class="card">
-        <div class="card-title">Fechas</div>
-        <div class="fechas-grid">
-            <div class="fecha-field">
-                <label class="fecha-label">Inicio</label>
-                <input type="date" class="fecha-input" id="fechaInicio" value="${e.fecha_inicio||''}">
-                <button class="fecha-clear" onclick="limpiarFecha('fechaInicio')">✕ Limpiar</button>
-            </div>
-            <div class="fecha-field">
-                <label class="fecha-label">Fin</label>
-                <input type="date" class="fecha-input" id="fechaFin" value="${e.fecha_fin||''}">
-                <button class="fecha-clear" onclick="limpiarFecha('fechaFin')">✕ Limpiar</button>
-            </div>
-            <div class="fecha-field">
-                <label class="fecha-label">Agregado</label>
-                <input type="date" class="fecha-input" id="fechaAgregado"
-                    value="${e.agregado_en ? e.agregado_en.split('T')[0].split(' ')[0] : ''}">
-                <button class="fecha-clear" onclick="limpiarFecha('fechaAgregado')">✕ Limpiar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- RESEÑA -->
-    <div class="card">
-        <div class="card-title">Mi reseña</div>
-        <div class="resena-wrap">
-            <div>
-                <div class="fecha-label" style="margin-bottom:10px">Puntuación</div>
-                <div class="rating-stars" id="ratingStars">
-                    ${[1,2,3,4,5,6,7,8,9,10].map(n =>
-                        `<button class="star ${resena&&resena.rating>=n?'active':''}" data-v="${n}">★</button>`
-                    ).join('')}
+                <div class="f-row">
+                    <label class="f-lbl">Fin</label>
+                    <input type="date" class="f-inp" id="fechaFin" value="${e.fecha_fin||''}">
+                </div>
+                <div class="f-row">
+                    <label class="f-lbl">Agregado</label>
+                    <input type="date" class="f-inp" id="fechaAgregado"
+                        value="${e.agregado_en ? e.agregado_en.split('T')[0].split(' ')[0] : ''}">
                 </div>
             </div>
-            <textarea class="resena-texto" id="resenaTxt" placeholder="Escribe tu reseña…" maxlength="2000">${resena?.comentario||''}</textarea>
+        </div>
+
+        <div style="flex:1;display:flex;flex-direction:column">
+            <div class="sec-label">Mi reseña</div>
+            <div class="f-lbl" style="margin-bottom:6px">Puntuación personal</div>
+            <div class="stars-row" id="ratingStars">
+                ${[1,2,3,4,5,6,7,8,9,10].map(n =>
+                    `<button class="star ${resenaRating>=n?'on':''}" data-v="${n}">★</button>`
+                ).join('')}
+                <span class="rating-val" id="ratingVal">${resenaRating > 0 ? resenaRating+' / 10' : '—'}</span>
+            </div>
+            <div class="jikan-note">
+                <span class="jikan-dot"></span>Escala 1–10 · compatible con Jikan API
+            </div>
+            <textarea class="resena-ta" id="resenaTxt" placeholder="Escribe tu reseña…" maxlength="2000" style="flex:1">${resena?.comentario||''}</textarea>
             ${resena ? `<div class="resena-meta">Escrita el ${fmtFecha(resena.creado_en)}${resena.editado_en?' · Editada el '+fmtFecha(resena.editado_en):''}</div>` : ''}
         </div>
-    </div>
-
-    <!-- LINK FICHA -->
-    <a href="/dashboard/anime/${animeId}" class="ficha-link" style="margin-bottom:16px">
-        <div><span class="ficha-link-label">Ver ficha completa</span>${esc(a.titulo)}</div>
-        <span>→</span>
-    </a>
-
-    <!-- ACCIONES -->
-    <div class="acciones">
-        <button class="btn btn-primary" id="btnGuardar" onclick="guardar()">💾 Guardar cambios</button>
-        <button class="btn btn-secondary" onclick="history.back()">← Volver</button>
-        <button class="btn btn-danger" id="btnEliminar" onclick="confirmarEliminar()">🗑 Quitar de lista</button>
     </div>`
 
-    resenaRating = resena?.rating || 0
     bindEventos(eps, vistos)
 }
 
+// ── Eventos ───────────────────────────────────────────
 function bindEventos(eps, vistos) {
-    // Estado
-    document.querySelectorAll('.estado-btn[data-tipo]').forEach(btn => {
+    let curEps = vistos
+
+    document.querySelectorAll('.est-btn[data-tipo]').forEach(btn => {
         btn.addEventListener('click', () => {
-            document.querySelectorAll('.estado-btn[data-tipo]').forEach(b => b.classList.remove('active'))
-            btn.classList.add('active')
+            document.querySelectorAll('.est-btn[data-tipo]').forEach(b => b.classList.remove('av','ap','aa'))
+            btn.classList.add({ visto:'av', pendiente:'ap', abandonado:'aa' }[btn.dataset.tipo])
             markDirty()
         })
     })
 
-    // Like
-    const btnLike = document.getElementById('btnLike')
-    if (btnLike) {
-        btnLike.addEventListener('click', () => {
-            const isLike = btnLike.classList.toggle('active-like')
-            btnLike.querySelector('.icon').textContent = isLike ? '❤️' : '🤍'
-            markDirty()
-        })
-    }
-
-    // Abandonar (solo visible si tipo === 'pendiente' o 'abandonado')
-    const btnAbandonar = document.getElementById('btnAbandonar')
-    if (btnAbandonar) {
-        btnAbandonar.addEventListener('click', () => {
-            const yaAbandonado = btnAbandonar.classList.contains('active-abandon')
-            document.querySelectorAll('.estado-btn[data-tipo]').forEach(b => {
-                b.classList.remove('active', 'active-abandon')
-            })
-            if (yaAbandonado) {
-                // Toggle off: volver a pendiente
-                document.querySelector('.estado-btn[data-tipo="pendiente"]')?.classList.add('active')
-            } else {
-                btnAbandonar.classList.add('active-abandon')
-            }
-            markDirty()
-        })
-    }
-
-    // Slider + input sincronizados
-    const slider  = document.getElementById('sliderEps')
-    const epsInp  = document.getElementById('epsInput')
-    const progrVal= document.getElementById('progresoValor')
+    document.getElementById('btnLike')?.addEventListener('click', function() {
+        this.classList.toggle('al'); markDirty()
+    })
 
     function setEps(v) {
-        v = Math.max(0, Math.min(eps, parseInt(v)||0))
-        if (slider)  { slider.value = v; actualizarSliderFill(slider) }
-        if (epsInp)  epsInp.value = v
-        if (progrVal) progrVal.innerHTML = `${v}<span class="progreso-total"> / ${eps}</span>`
+        curEps = Math.max(0, Math.min(eps, parseInt(v) || 0))
+        const pct = eps > 0 ? (curEps / eps * 100).toFixed(1) : 0
+        const fill = document.getElementById('fillEps')
+        if (fill) fill.style.width = pct + '%'
+        const num = document.getElementById('epsNum')
+        if (num) num.textContent = curEps
+        const val = document.getElementById('progresoValor')
+        if (val) val.innerHTML = `${curEps}<span class="prog-tot"> / ${eps}</span>`
         markDirty()
     }
 
-    if (slider) {
-        actualizarSliderFill(slider)
-        slider.addEventListener('input', () => setEps(slider.value))
-    }
-    if (epsInp) epsInp.addEventListener('change', () => setEps(epsInp.value))
-    document.getElementById('btnEpsMinus')?.addEventListener('click', () => setEps((parseInt(epsInp?.value)||0) - 1))
-    document.getElementById('btnEpsPlus')?.addEventListener('click',  () => setEps((parseInt(epsInp?.value)||0) + 1))
+    document.getElementById('btnEpsMinus')?.addEventListener('click', () => setEps(curEps - 1))
+    document.getElementById('btnEpsPlus')?.addEventListener('click',  () => setEps(curEps + 1))
+    document.getElementById('trackEps')?.addEventListener('click', function(e) {
+        const r = this.getBoundingClientRect()
+        setEps(Math.round((e.clientX - r.left) / r.width * eps))
+    })
 
-    // Estrellas
     const stars = document.querySelectorAll('.star')
     stars.forEach(star => {
         star.addEventListener('mouseenter', () => {
             const v = parseInt(star.dataset.v)
-            stars.forEach(s => s.classList.toggle('active', parseInt(s.dataset.v) <= v))
+            stars.forEach(s => s.classList.toggle('on', parseInt(s.dataset.v) <= v))
         })
         star.addEventListener('mouseleave', () => {
-            stars.forEach(s => s.classList.toggle('active', parseInt(s.dataset.v) <= resenaRating))
+            stars.forEach(s => s.classList.toggle('on', parseInt(s.dataset.v) <= resenaRating))
         })
         star.addEventListener('click', () => {
             resenaRating = parseInt(star.dataset.v)
-            stars.forEach(s => s.classList.toggle('active', parseInt(s.dataset.v) <= resenaRating))
+            stars.forEach(s => s.classList.toggle('on', parseInt(s.dataset.v) <= resenaRating))
+            const rv = document.getElementById('ratingVal')
+            if (rv) rv.textContent = resenaRating + ' / 10'
             markDirty()
         })
     })
 
-    // Fechas
-    document.querySelectorAll('.fecha-input').forEach(inp => inp.addEventListener('change', markDirty))
+    document.querySelectorAll('.f-inp').forEach(inp => inp.addEventListener('change', markDirty))
     document.getElementById('resenaTxt')?.addEventListener('input', markDirty)
-}
-
-function actualizarSliderFill(slider) {
-    const pct = (slider.value / slider.max) * 100
-    slider.style.background = `linear-gradient(to right, var(--accent) ${pct}%, var(--border) ${pct}%)`
 }
 
 function markDirty() { dirty = true }
 
-function limpiarFecha(id) {
-    const el = document.getElementById(id)
-    if (el) { el.value = ''; markDirty() }
-}
-
-// ── Guardar ───────────────────────────────────────────────────────────────────
+// ── Guardar ───────────────────────────────────────────
 async function guardar() {
     if (guardando) return
     guardando = true
     const btn = document.getElementById('btnGuardar')
     if (btn) btn.disabled = true
-
     try {
-        // Lee tipo: active (visto/pendiente) o active-abandon (abandonado)
-        const tipoEl = document.querySelector('.estado-btn.active[data-tipo]')
-                    || document.querySelector('.estado-btn.active-abandon[data-tipo]')
-        const tipo = tipoEl?.dataset.tipo
-        const eps     = parseInt(document.getElementById('epsInput')?.value) || 0
-        const fi      = document.getElementById('fechaInicio')?.value   || null
-        const ff      = document.getElementById('fechaFin')?.value      || null
-        const fagr    = document.getElementById('fechaAgregado')?.value  || null
-        const like    = document.getElementById('btnLike')?.classList.contains('active-like')
-        const txtRes  = document.getElementById('resenaTxt')?.value.trim()
+        const tipoEl = document.querySelector('.est-btn.av[data-tipo]')
+                    || document.querySelector('.est-btn.ap[data-tipo]')
+                    || document.querySelector('.est-btn.aa[data-tipo]')
+        const tipo   = tipoEl?.dataset.tipo
+        const epsVal = parseInt(document.getElementById('epsNum')?.textContent) || 0
+        const fi     = document.getElementById('fechaInicio')?.value  || null
+        const ff     = document.getElementById('fechaFin')?.value     || null
+        const fagr   = document.getElementById('fechaAgregado')?.value || null
+        const like   = document.getElementById('btnLike')?.classList.contains('al')
+        const txtRes = document.getElementById('resenaTxt')?.value.trim()
 
-        // Guardar entrada de lista
         const patch = await fetch(`/lista/detalle/${animeId}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json', ...csrf() },
-            body: JSON.stringify({
-                tipo,
-                episodios_vistos: eps,
-                fecha_inicio:     fi,
-                fecha_fin:        ff,
-                agregado_en:      fagr,
-            })
+            body: JSON.stringify({ tipo, episodios_vistos: epsVal, fecha_inicio: fi, fecha_fin: ff, agregado_en: fagr })
         })
         if (!patch.ok) throw new Error('patch')
 
-        // Like
-        const likeActual = data.like
-        if (like !== likeActual) {
+        if (like !== data.like) {
             await fetch('/anime-likes', {
-                method:  like ? 'POST' : 'DELETE',
+                method: like ? 'POST' : 'DELETE',
                 headers: { 'Content-Type': 'application/json', ...csrf() },
-                body:    JSON.stringify({ anime_id: animeId })
+                body: JSON.stringify({ anime_id: animeId })
             })
             data.like = like
         }
 
-        // Reseña
         if (resenaRating > 0 && txtRes) {
             const metodo = data.resena ? 'PUT' : 'POST'
             await fetch('/resenas', {
-                method:  metodo,
+                method: metodo,
                 headers: { 'Content-Type': 'application/json', ...csrf() },
-                body:    JSON.stringify({
-                    anime_id:   animeId,
-                    rating:     resenaRating,
-                    comentario: txtRes,
+                body: JSON.stringify({
+                    anime_id: animeId, rating: resenaRating, comentario: txtRes,
                     ...(data.resena ? { resena_id: data.resena.id } : {})
                 })
             })
@@ -683,9 +767,7 @@ async function guardar() {
 
         dirty = false
         toast('✓ Cambios guardados', 'ok')
-        // Notificar a mi-lista para que invalide el caché
         try { new BroadcastChannel('ca_lista').postMessage({ tipo: 'invalidar' }) } catch(e) {}
-
     } catch {
         toast('Error al guardar', 'err')
     } finally {
@@ -694,23 +776,18 @@ async function guardar() {
     }
 }
 
-// ── Modal ─────────────────────────────────────────────────────────────────────
+// ── Modal / Eliminar ──────────────────────────────────
 function abrirModal(title, desc, onConfirm) {
     document.getElementById('modalTitle').textContent = title
     document.getElementById('modalDesc').textContent  = desc
-    const overlay = document.getElementById('modalOverlay')
-    overlay.classList.add('open')
-    const btn = document.getElementById('modalConfirm')
-    btn.onclick = () => { cerrarModal(); onConfirm() }
+    document.getElementById('modalOverlay').classList.add('open')
+    document.getElementById('modalConfirm').onclick = () => { cerrarModal(); onConfirm() }
 }
-function cerrarModal() {
-    document.getElementById('modalOverlay').classList.remove('open')
-}
-document.getElementById('modalOverlay').addEventListener('click', (e) => {
+function cerrarModal() { document.getElementById('modalOverlay').classList.remove('open') }
+document.getElementById('modalOverlay').addEventListener('click', e => {
     if (e.target === e.currentTarget) cerrarModal()
 })
 
-// ── Eliminar ──────────────────────────────────────────────────────────────────
 async function confirmarEliminar() {
     abrirModal(
         '¿Quitar de tu lista?',
@@ -718,22 +795,20 @@ async function confirmarEliminar() {
         async () => {
             try {
                 const res = await fetch('/lista/eliminar', {
-                    method:  'POST',
+                    method: 'POST',
                     headers: { 'Content-Type': 'application/json', ...csrf() },
-                    body:    JSON.stringify({ anime_id: animeId })
+                    body: JSON.stringify({ anime_id: animeId })
                 })
                 if (!res.ok) throw new Error()
                 try { new BroadcastChannel('ca_lista').postMessage({ tipo: 'invalidar' }) } catch(e) {}
                 toast('Eliminado de tu lista', 'ok')
                 setTimeout(() => history.back(), 900)
-            } catch {
-                toast('Error al eliminar', 'err')
-            }
+            } catch { toast('Error al eliminar', 'err') }
         }
     )
 }
 
-// ── Utilidades ────────────────────────────────────────────────────────────────
+// ── Utils ─────────────────────────────────────────────
 function esc(v = '') {
     return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
 }
@@ -743,10 +818,6 @@ function fmtFecha(str) {
     catch { return str }
 }
 
-// Advertir si hay cambios sin guardar
-// sin advertencia de salida
-
-// ── Init ──────────────────────────────────────────────────────────────────────
 cargar()
 </script>
 </body>

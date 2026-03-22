@@ -73,17 +73,30 @@ class DatosRegistro(BaseModel):
             raise ValueError("Formato de email inválido")
         return v
 
-    @field_validator("password")
-    @classmethod
-    def password_valida(cls, v: str) -> str:
-        if not v.strip():
-            raise ValueError("La contraseña no puede estar vacía")
-        if len(v) < 8:
-            raise ValueError("La contraseña debe tener al menos 8 caracteres")
-        if len(v) > 128:
-            raise ValueError("Contraseña demasiado larga")
-        return v
-
+@field_validator("password")
+@classmethod
+def password_valida(cls, v: str) -> str:
+    COMUNES = {
+        "12345678","123456789","1234567890","password","password1",
+        "qwerty123","abc12345","iloveyou","admin123","welcome1",
+        "monkey123","dragon12","master12","sunshine","princess",
+        "letmein1","shadow12","michael1","football","baseball1"
+    }
+    if not v.strip():
+        raise ValueError("La contraseña no puede estar vacía")
+    if len(v) < 8:
+        raise ValueError("La contraseña debe tener al menos 8 caracteres")
+    if len(v) > 128:
+        raise ValueError("Contraseña demasiado larga")
+    if not re.search(r'[A-Z]', v):
+        raise ValueError("La contraseña debe tener al menos una letra mayúscula")
+    if not re.search(r'[0-9]', v):
+        raise ValueError("La contraseña debe tener al menos un número")
+    if not re.search(r'[!@#$%^&*(),.?\":{}|<>_\-\+=/\\\'`~\[\];]', v):
+        raise ValueError("La contraseña debe tener al menos un carácter especial")
+    if v.lower() in COMUNES:
+        raise ValueError("La contraseña es demasiado común, elige una más segura")
+    return v
 
 class DatosLogin(BaseModel):
     model_config = {"extra": "forbid"}
@@ -204,6 +217,30 @@ def register(request: Request, datos: DatosRegistro):
         return JSONResponse(status_code=400, content={"error": "El email no tiene un formato válido"})
     if resultado == "error_db":
         return JSONResponse(status_code=500, content={"error": "Error interno del servidor"})
+    if resultado == "password_sin_mayuscula":
+        return JSONResponse(status_code=400, content={"error": "La contraseña debe tener al menos una letra mayúscula"})
+    if resultado == "password_sin_numero":
+        return JSONResponse(status_code=400, content={"error": "La contraseña debe tener al menos un número"})
+    if resultado == "password_sin_especial":
+        return JSONResponse(status_code=400, content={"error": "La contraseña debe tener al menos un carácter especial (!@#$...)"})
+    if resultado == "password_comun":
+        return JSONResponse(status_code=400, content={"error": "La contraseña es demasiado común, elige una más segura"})
+    if resultado == "password_vacia":
+        return JSONResponse(status_code=400, content={"error": "La contraseña no puede estar vacía"})
+    if resultado == "password_larga":
+        return JSONResponse(status_code=400, content={"error": "Contraseña demasiado larga"})
+    if resultado == "password_sin_mayuscula":
+        return JSONResponse(status_code=400, content={"error": "La contraseña debe tener al menos una letra mayúscula"})
+    if resultado == "password_sin_numero":
+        return JSONResponse(status_code=400, content={"error": "La contraseña debe tener al menos un número"})
+    if resultado == "password_sin_especial":
+        return JSONResponse(status_code=400, content={"error": "La contraseña debe tener al menos un carácter especial (!@#$...)"})
+    if resultado == "password_comun":
+        return JSONResponse(status_code=400, content={"error": "La contraseña es demasiado común, elige una más segura"})
+    if resultado == "password_vacia":
+        return JSONResponse(status_code=400, content={"error": "La contraseña no puede estar vacía"})
+    if resultado == "password_larga":
+        return JSONResponse(status_code=400, content={"error": "Contraseña demasiado larga"})
 
     respuesta = JSONResponse(status_code=201, content={"mensaje": "Código enviado a tu correo"})
     respuesta.set_cookie(
@@ -230,6 +267,8 @@ def login(request: Request, datos: DatosLogin):
         return JSONResponse(status_code=400, content={"error": "El email no tiene un formato válido"})
     if resultado == "credenciales_invalidas":
         return JSONResponse(status_code=401, content={"error": "Email o contraseña incorrectos"})
+    if resultado == "email_no_verificado":
+        return JSONResponse(status_code=403, content={"error": "Debes verificar tu correo antes de iniciar sesión"})
 
     token      = resultado["token"]
     csrf_token = resultado["csrf_token"]

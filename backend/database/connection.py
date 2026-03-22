@@ -85,7 +85,7 @@ def obtener_usuario_por_email(email: str):
         cursor = conn.cursor()
         try:
             cursor.execute(
-                "SELECT id, password_hash FROM usuarios WHERE email = %s", (email,)
+                "SELECT id, password_hash, email_verificado FROM usuarios WHERE email = %s", (email,)
             )
             return cursor.fetchone()
         finally:
