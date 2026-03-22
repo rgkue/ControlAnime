@@ -461,3 +461,113 @@ def buscar_anime_cache(query: str) -> list:
             return []
         finally:
             cursor.close()
+
+# ══════════════════════════════════════════════════════════════════════════════
+# SESIONES ACTIVAS
+# ══════════════════════════════════════════════════════════════════════════════
+
+def obtener_sesiones_activas(usuario_id: int) -> list:
+    with get_db() as conn:
+        cursor = conn.cursor()
+        try:
+            cursor.execute("""
+                SELECT id, token, creado_en, expira_en
+                FROM sesiones
+                WHERE usuario_id = %s AND expira_en > NOW()
+                ORDER BY creado_en DESC
+            """, (usuario_id,))
+            rows = cursor.fetchall()
+            return [
+                {
+                    "id":        r[0],
+                    "token":     r[1][:8] + "...",
+                    "creado_en": r[2].isoformat() if r[2] else None,
+                    "expira_en": r[3].isoformat() if r[3] else None,
+                }
+                for r in rows
+            ]
+        except Exception as e:
+            print(f"[DB ERROR obtener_sesiones_activas] {e}")
+            return []
+        finally:
+            cursor.close()
+
+
+def cerrar_sesion_por_id(sesion_id: int, usuario_id: int) -> bool:
+    with get_db() as conn:
+        cursor = conn.cursor()
+        try:
+            cursor.execute(
+                "DELETE FROM sesiones WHERE id = %s AND usuario_id = %s",
+                (sesion_id, usuario_id)
+            )
+            conn.commit()
+            return cursor.rowcount > 0
+        except Exception as e:
+            conn.rollback()
+            print(f"[DB ERROR cerrar_sesion_por_id] {e}")
+            return False
+        finally:
+            cursor.close()
+
+
+def cerrar_otras_sesiones(usuario_id: int, token_actual: str) -> bool:
+    with get_db() as conn:
+        cursor = conn.cursor()
+        try:
+            cursor.execute(
+                "DELETE FROM sesiones WHERE usuario_id = %s AND token != %s",
+                (usuario_id, token_actual)
+            )
+            conn.commit()
+            return True
+        except Exception as e:
+            conn.rollback()
+            print(f"[DB ERROR cerrar_otras_sesiones] {e}")
+            return False
+        finally:
+            cursor.close()
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# ZONA DE PELIGRO
+# ══════════════════════════════════════════════════════════════════════════════
+
+def eliminar_lista_usuario(usuario_id: int) -> bool:
+    with get_db() as conn:
+        cursor = conn.cursor()
+        try:
+            cursor.execute("DELETE FROM lista_animes WHERE usuario_id = %s", (usuario_id,))
+            cursor.execute("DELETE FROM resenas WHERE usuario_id = %s", (usuario_id,))
+            cursor.execute("DELETE FROM anime_likes WHERE usuario_id = %s", (usuario_id,))
+            cursor.execute("DELETE FROM top_animes WHERE usuario_id = %s", (usuario_id,))
+            conn.commit()
+            return True
+        except Exception as e:
+            conn.rollback()
+            print(f"[DB ERROR eliminar_lista_usuario] {e}")
+            return False
+        finally:
+            cursor.close()
+
+
+def eliminar_cuenta_usuario(usuario_id: int) -> bool:
+    with get_db() as conn:
+        cursor = conn.cursor()
+        try:
+            # Eliminar en orden para respetar FK
+            cursor.execute("DELETE FROM lista_animes          WHERE usuario_id = %s", (usuario_id,))
+            cursor.execute("DELETE FROM resenas               WHERE usuario_id = %s", (usuario_id,))
+            cursor.execute("DELETE FROM anime_likes           WHERE usuario_id = %s", (usuario_id,))
+            cursor.execute("DELETE FROM top_animes            WHERE usuario_id = %s", (usuario_id,))
+            cursor.execute("DELETE FROM codigos_verificacion  WHERE usuario_id = %s", (usuario_id,))
+            cursor.execute("DELETE FROM sesiones              WHERE usuario_id = %s", (usuario_id,))
+            cursor.execute("DELETE FROM usuarios              WHERE id = %s",         (usuario_id,))
+            conn.commit()
+            return True
+        except Exception as e:
+            conn.rollback()
+            print(f"[DB ERROR eliminar_cuenta_usuario] {e}")
+            return False
+        finally:
+            cursor.close()

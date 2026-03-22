@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Populares · ControlAnime</title>
+<title>En Emisión · ControlAnime</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="icon" type="image/x-icon" href="/static/logo.png">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
@@ -34,7 +34,7 @@ body { font-family: 'DM Sans', sans-serif; font-size: 14px; background: var(--bg
 /* ── SIDEBAR ──────────────────────────────────────── */
 .sidebar { width: var(--sidebar-w); background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; transition: width 0.25s; overflow: hidden; flex-shrink: 0; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; }
 .sidebar.collapsed { width: var(--sidebar-collapsed); }
-.sidebar-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 16px; border-bottom: 1px solid var(--border); min-height: 64px; overflow: hidden; }
+.sidebar-header { display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid var(--border); height: var(--topbar-h); overflow: hidden; flex-shrink: 0; }
 .logo { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.06em; color: var(--text); text-decoration: none; white-space: nowrap; transition: opacity 0.25s; }
 .logo span { color: var(--accent); }
 .sidebar.collapsed .logo { opacity: 0; pointer-events: none; width: 0; }
@@ -75,20 +75,28 @@ body { font-family: 'DM Sans', sans-serif; font-size: 14px; background: var(--bg
 .topbar-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--accent); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 600; color: #000; flex-shrink: 0; }
 .topbar-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 
-/* ── BODY ─────────────────────────────────────────── */
-.page-body { padding: 28px 36px 60px; width: 100%; }
-
-/* ── TABS DE GÉNERO ───────────────────────────────── */
-.genero-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 24px; }
-.genero-tab {
-    padding: 6px 16px; border-radius: 20px;
-    border: 1px solid var(--border2);
-    background: var(--surface2); color: var(--muted2);
-    font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 500;
-    cursor: pointer; transition: all 0.15s; white-space: nowrap;
+/* ── BADGE EN EMISIÓN ─────────────────────────────── */
+.badge-emision {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.25);
+    color: var(--green); font-size: 0.68rem; font-weight: 600;
+    padding: 2px 8px; border-radius: 10px; letter-spacing: 0.04em;
+    text-transform: uppercase;
 }
-.genero-tab:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
-.genero-tab.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+.badge-emision::before {
+    content: '';
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green);
+    animation: pulse 1.8s ease-in-out infinite;
+    flex-shrink: 0;
+}
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.4; transform: scale(0.75); }
+}
+
+/* ── BODY ─────────────────────────────────────────── */
+.page-body { padding: 28px 36px 60px; width: 100%; max-width: 1600px; }
 
 /* ── SECTION HEADER ───────────────────────────────── */
 .sec-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
@@ -97,74 +105,39 @@ body { font-family: 'DM Sans', sans-serif; font-size: 14px; background: var(--bg
 .sec-count { font-size: 0.73rem; color: var(--muted); }
 
 /* ── GRID ─────────────────────────────────────────── */
-.anime-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
-    gap: 14px;
-    margin-bottom: 32px;
-}
+.anime-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 16px; margin-bottom: 32px; }
+@media (max-width: 1400px) { .anime-grid { grid-template-columns: repeat(6, 1fr); } }
+@media (max-width: 1100px) { .anime-grid { grid-template-columns: repeat(5, 1fr); } }
+@media (max-width: 900px)  { .anime-grid { grid-template-columns: repeat(4, 1fr); gap: 12px; } }
 
 /* ── CARD ─────────────────────────────────────────── */
-.anime-card {
-    position: relative; border-radius: 8px; overflow: hidden;
-    background: var(--surface2); cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    border: 1px solid var(--border);
-}
+.anime-card { position: relative; border-radius: 8px; overflow: hidden; background: var(--surface2); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; border: 1px solid var(--border); }
 .anime-card:hover { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(0,0,0,0.55); border-color: var(--border2); }
-.anime-card img { width: 100%; height: 210px; object-fit: cover; display: block; background: var(--surface3); }
+.anime-card img { width: 100%; height: 220px; object-fit: cover; display: block; background: var(--surface3); }
 .card-info { padding: 10px 10px 12px; }
 .card-title { font-size: 0.78rem; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
 .card-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .card-rating { font-size: 0.71rem; color: var(--accent); font-weight: 600; }
-.card-badge {
-    font-size: 0.62rem; font-weight: 600; padding: 2px 6px;
-    border-radius: 10px; text-transform: uppercase; letter-spacing: 0.04em;
-}
+.card-badge { font-size: 0.62rem; font-weight: 600; padding: 2px 6px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.04em; }
 .badge-tv      { background: rgba(99,102,241,0.15); color: #a5b4fc; }
 .badge-movie   { background: rgba(236,72,153,0.12); color: #f9a8d4; }
 .badge-ova     { background: rgba(245,158,11,0.12); color: #fcd34d; }
 .badge-ona     { background: rgba(20,184,166,0.12); color: #5eead4; }
 .badge-special { background: rgba(107,114,128,0.15); color: #9ca3af; }
 
-/* Posición en top */
-.card-pos {
-    position: absolute; top: 8px; left: 8px;
-    font-family: 'Bebas Neue', sans-serif; font-size: 0.95rem;
-    background: rgba(0,0,0,0.75); backdrop-filter: blur(4px);
-    color: var(--accent); border-radius: 5px; padding: 1px 7px;
-    line-height: 1.4;
-}
-
 /* ── SKELETON ─────────────────────────────────────── */
 .skeleton { background: var(--surface2); border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
-.skeleton-img { width: 100%; height: 210px; background: linear-gradient(90deg, var(--surface2) 25%, var(--surface3) 50%, var(--surface2) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; }
+.skeleton-img { width: 100%; height: 220px; background: linear-gradient(90deg, var(--surface2) 25%, var(--surface3) 50%, var(--surface2) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; }
 .skeleton-info { padding: 10px; }
 .skeleton-line { height: 10px; background: linear-gradient(90deg, var(--surface2) 25%, var(--surface3) 50%, var(--surface2) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 4px; margin-bottom: 6px; }
 .skeleton-line.short { width: 55%; }
 @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
 /* ── PAGINACIÓN ───────────────────────────────────── */
-.paginacion {
-    display: flex; align-items: center; justify-content: center;
-    gap: 5px; flex-wrap: wrap; padding: 8px 0 40px;
-}
-.pag-btn {
-    min-width: 36px; height: 36px; padding: 0 8px;
-    border-radius: 8px; border: 1px solid var(--border2);
-    background: var(--surface2); color: var(--muted2);
-    font-family: 'DM Sans', sans-serif; font-size: 0.83rem;
-    cursor: pointer; transition: all 0.15s;
-    display: inline-flex; align-items: center; justify-content: center;
-    font-weight: 500;
-}
-.pag-btn:hover:not(:disabled):not(.active) {
-    border-color: var(--accent); color: var(--accent); background: var(--accent-dim);
-}
-.pag-btn.active {
-    background: var(--accent); border-color: var(--accent);
-    color: #000; font-weight: 700;
-}
+.paginacion { display: flex; align-items: center; justify-content: center; gap: 5px; flex-wrap: wrap; padding: 8px 0 40px; }
+.pag-btn { min-width: 36px; height: 36px; padding: 0 8px; border-radius: 8px; border: 1px solid var(--border2); background: var(--surface2); color: var(--muted2); font-family: 'DM Sans', sans-serif; font-size: 0.83rem; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; justify-content: center; font-weight: 500; }
+.pag-btn:hover:not(:disabled):not(.active) { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+.pag-btn.active { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 700; }
 .pag-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 .pag-sep { color: var(--muted); font-size: 0.82rem; padding: 0 2px; line-height: 36px; }
 
@@ -185,7 +158,7 @@ body { font-family: 'DM Sans', sans-serif; font-size: 14px; background: var(--bg
     .topbar { padding: 0 16px; }
     .topbar-email { display: none; }
     .topbar-search { max-width: none; flex: 1; }
-    .anime-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+    .anime-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
     .anime-card img { height: 180px; }
 }
 </style>
@@ -201,42 +174,41 @@ body { font-family: 'DM Sans', sans-serif; font-size: 14px; background: var(--bg
         </button>
     </div>
     <div class="sidebar-nav">
-        <a class="nav-item" href="/dashboard" data-section="inicio">
+        <a class="nav-item" href="/dashboard">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
             <span class="nav-label">Inicio</span>
         </a>
-        <a class="nav-item" href="/mi-lista" data-section="mi-lista">
+        <a class="nav-item" href="/mi-lista">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
             <span class="nav-label">Mi lista</span>
         </a>
-        <a class="nav-item" href="/mi-top" data-section="mi-top">
+        <a class="nav-item" href="/mi-top">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
             <span class="nav-label">Mi Top 5</span>
         </a>
-        <a class="nav-item active" href="/populares" data-section="populares">
+        <a class="nav-item" href="/populares">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
             <span class="nav-label">Tendencias</span>
         </a>
-        <a class="nav-item" href="/emision" data-section="emision">
+        <a class="nav-item active" href="/emision">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
             <span class="nav-label">En emisión</span>
         </a>
-        <a class="nav-item" href="/ranking" data-section="ranking">
+        <a class="nav-item" href="/ranking">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 20 18 10"/><polyline points="12 20 12 4"/><polyline points="6 20 6 14"/></svg>
             <span class="nav-label">Ranking</span>
         </a>
         <a class="nav-item" href="/estadisticas">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/>
-                </svg><span class="nav-label">Estadísticas</span></a>
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+            <span class="nav-label">Estadísticas</span>
         </a>
-        <a class="nav-item" href="/exportar" data-section="exportar">
+        <a class="nav-item" href="/exportar">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             <span class="nav-label">Exportar</span>
         </a>
     </div>
     <div class="sidebar-footer">
-        <a class="nav-item" href="/configuracion" data-section="configuracion">
+        <a class="nav-item" href="/configuracion">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             <span class="nav-label">Configuración</span>
         </a>
@@ -250,11 +222,13 @@ body { font-family: 'DM Sans', sans-serif; font-size: 14px; background: var(--bg
 <!-- MAIN -->
 <div class="main">
     <div class="topbar">
-        <span class="topbar-title">TENDENCIAS</span>
+        <span class="topbar-title">EN EMISIÓN</span>
         <div class="topbar-search">
             <input type="text" id="searchInput" placeholder="Buscar anime..." autocomplete="off">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <button id="btnLimpiar" onclick="limpiarBusqueda()" title="Limpiar" style="display:none;position:absolute;right:36px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);padding:2px;line-height:0;">
+            <button id="btnLimpiar" onclick="limpiarBusqueda()" title="Limpiar"
+                style="display:none;position:absolute;right:36px;top:50%;transform:translateY(-50%);
+                       background:none;border:none;cursor:pointer;color:var(--muted);padding:2px;line-height:0;">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
         </div>
@@ -267,57 +241,33 @@ body { font-family: 'DM Sans', sans-serif; font-size: 14px; background: var(--bg
     </div>
 
     <div class="page-body">
-        <!-- Tabs de género -->
-        <div class="genero-tabs" id="generoTabs">
-            <button class="genero-tab active" data-genero="" data-label="Todos">Todos</button>
-            <button class="genero-tab" data-genero="Action"    data-label="Acción">Acción</button>
-            <button class="genero-tab" data-genero="Adventure" data-label="Aventura">Aventura</button>
-            <button class="genero-tab" data-genero="Comedy"    data-label="Comedia">Comedia</button>
-            <button class="genero-tab" data-genero="Drama"     data-label="Drama">Drama</button>
-            <button class="genero-tab" data-genero="Fantasy"   data-label="Fantasía">Fantasía</button>
-            <button class="genero-tab" data-genero="Romance"   data-label="Romance">Romance</button>
-            <button class="genero-tab" data-genero="Sci-Fi"    data-label="Ciencia Ficción">Ciencia Ficción</button>
-            <button class="genero-tab" data-genero="Horror"    data-label="Terror">Terror</button>
-            <button class="genero-tab" data-genero="Mystery"   data-label="Misterio">Misterio</button>
-            <button class="genero-tab" data-genero="Psychological" data-label="Psicológico">Psicológico</button>
-            <button class="genero-tab" data-genero="Shounen"   data-label="Shōnen">Shōnen</button>
-            <button class="genero-tab" data-genero="Seinen"    data-label="Seinen">Seinen</button>
-        </div>
 
-        <!-- Sección header -->
         <div class="sec-header">
-            <div class="sec-label" id="secLabel">Todos los animes</div>
+            <div class="sec-label">
+                <span class="badge-emision">En vivo</span>
+                Temporada actual
+            </div>
             <span class="sec-count" id="secCount"></span>
         </div>
 
-        <!-- Grid de animes -->
         <div class="anime-grid" id="animeGrid"></div>
 
-        <!-- Paginación -->
         <div class="paginacion" id="paginacion" style="display:none"></div>
+
     </div>
 </div>
 
 <script>
 // ── Estado ────────────────────────────────────────────
-const PAGE_SIZE   = 28
-let generoActivo  = ''
-let labelActivo   = 'Todos'
-let paginaActual  = 1
-let totalItems    = 0   // estimado para calcular páginas
-let cargando      = false
-let searchTimer   = null
-let queryActual   = ''
-
-// ── CSRF ──────────────────────────────────────────────
-function getCsrf() {
-    return document.cookie.split(';').map(c => c.trim())
-        .find(c => c.startsWith('csrf_token='))?.split('=')[1] || ''
-}
+const PAGE_SIZE  = 28
+let paginaActual = 1
+let totalAnimes  = 0
+let cargando     = false
+let searchTimer  = null
+let queryActual  = ''
 
 // ── INIT ──────────────────────────────────────────────
 async function init() {
-    // Topbar usuario
     try {
         const res = await fetch('/me')
         if (res.status === 401) { location.href = '/login'; return }
@@ -325,19 +275,17 @@ async function init() {
         document.getElementById('topbarEmail').textContent = me.email || ''
         const av = document.getElementById('topbarAvatar')
         if (me.foto_perfil) av.innerHTML = `<img src="${me.foto_perfil}" alt="avatar">`
-        else av.textContent = (me.email || '?').slice(0,2).toUpperCase()
+        else av.textContent = (me.email || '?').slice(0, 2).toUpperCase()
     } catch(e) { location.href = '/login'; return }
 
-    // Primera carga
     await cargarAnimes(1)
-    initTabs()
     initSearch()
 }
 
 // ── FETCH ─────────────────────────────────────────────
 async function cargarAnimes(pagina = 1) {
     if (cargando) return
-    cargando    = true
+    cargando     = true
     paginaActual = pagina
     const offset = (pagina - 1) * PAGE_SIZE
 
@@ -346,21 +294,17 @@ async function cargarAnimes(pagina = 1) {
     window.scrollTo({ top: 0, behavior: 'smooth' })
 
     try {
-        let url
-        if (queryActual) {
-            url = `/animes/buscar?q=${encodeURIComponent(queryActual)}`
-        } else if (generoActivo) {
-            url = `/animes/genero?g=${encodeURIComponent(generoActivo)}&offset=${offset}&limit=${PAGE_SIZE}`
-        } else {
-            url = `/animes/top?offset=${offset}&limit=${PAGE_SIZE}`
-        }
+        const url = queryActual
+            ? `/animes/buscar?q=${encodeURIComponent(queryActual)}`
+            : `/animes/emision?offset=${offset}&limit=${PAGE_SIZE}`
 
-        const res   = await fetch(url)
-        const data  = await res.json()
+        const res  = await fetch(url)
+        const data = await res.json()
         const items = data.resultados || []
+        if (!queryActual && data.total !== undefined) totalAnimes = data.total
 
-        renderGrid(items, !generoActivo && !queryActual)
-        actualizarLabel(offset + items.length)
+        renderGrid(items)
+        actualizarContador(offset + items.length)
         renderPaginacion(items.length)
 
     } catch(e) {
@@ -375,7 +319,7 @@ async function cargarAnimes(pagina = 1) {
 }
 
 // ── RENDER ────────────────────────────────────────────
-function renderGrid(animes, withPos = false) {
+function renderGrid(animes) {
     const grid = document.getElementById('animeGrid')
     if (!animes.length) {
         grid.innerHTML = `
@@ -385,25 +329,21 @@ function renderGrid(animes, withPos = false) {
             </div>`
         return
     }
-    grid.innerHTML = animes.map((a, i) => cardHTML(a, withPos ? i + 1 : null)).join('')
+    grid.innerHTML = animes.map(a => cardHTML(a)).join('')
     grid.classList.add('fade-in')
-    bindCards(grid, animes)
-}
-
-function bindCards(grid, animes) {
     grid.querySelectorAll('.anime-card').forEach((card, i) => {
         if (animes[i]) card.addEventListener('click', () => irAAnime(animes[i]))
     })
 }
 
-function cardHTML(a, pos) {
+function cardHTML(a) {
     const poster = a.poster_url || ''
     const badge  = tipoBadge(a.tipo)
-    const posTag = pos ? `<div class="card-pos">#${pos}</div>` : ''
     return `
     <div class="anime-card">
-        ${poster ? `<img src="${poster}" alt="${esc(a.titulo)}" loading="lazy">` : `<div style="width:100%;height:210px;background:var(--surface3)"></div>`}
-        ${posTag}
+        ${poster
+            ? `<img src="${esc(poster)}" alt="${esc(a.titulo)}" loading="lazy">`
+            : `<div style="width:100%;height:220px;background:var(--surface3)"></div>`}
         <div class="card-info">
             <div class="card-title">${esc(a.titulo)}</div>
             <div class="card-meta">
@@ -432,26 +372,22 @@ function renderSkeletons(n) {
         </div>`).join('')
 }
 
-// ── LABEL Y PAGINACIÓN ────────────────────────────────
-function actualizarLabel(total) {
-    const label = queryActual
-        ? `Resultados para "${queryActual}"`
-        : generoActivo ? labelActivo : 'Todos los animes'
-    document.getElementById('secLabel').textContent = label
-    document.getElementById('secCount').textContent = total > 0 ? `${total}+ animes` : ''
+// ── CONTADOR Y PAGINACIÓN ─────────────────────────────
+function actualizarContador(total) {
+    document.getElementById('secCount').textContent =
+        queryActual
+            ? `Resultados para "${queryActual}"`
+            : (total > 0 ? `${total}+ animes` : '')
 }
 
 function renderPaginacion(loaded) {
     const pag = document.getElementById('paginacion')
-    // No mostrar paginación en búsquedas (resultado único)
-    if (queryActual || loaded < PAGE_SIZE) {
-        pag.style.display = 'none'
-        return
-    }
+    if (queryActual) { pag.style.display = 'none'; return }
+    const totalPags = Math.ceil(totalAnimes / PAGE_SIZE)
+    if (totalPags <= 1) { pag.style.display = 'none'; return }
     pag.style.display = 'flex'
     const p = paginaActual
-    // Mostrar hasta 7 botones centrados en la página actual
-    const paginas = new Set([1, p-1, p, p+1, p+2].filter(n => n >= 1))
+    const paginas = new Set([1, p-1, p, p+1, p+2, totalPags].filter(n => n >= 1 && n <= totalPags))
     const sorted  = [...paginas].sort((a,b) => a-b)
     let prev = 0, btns = []
     for (const n of sorted) {
@@ -459,29 +395,11 @@ function renderPaginacion(loaded) {
         btns.push(`<button class="pag-btn${n===p?' active':''}" onclick="cargarAnimes(${n})">${n}</button>`)
         prev = n
     }
-    // Botón siguiente siempre visible si hay página siguiente
-    const hayMas = loaded >= PAGE_SIZE
     pag.innerHTML = `
         <button class="pag-btn" onclick="cargarAnimes(${p-1})" ${p<=1?'disabled':''}>‹</button>
         ${btns.join('')}
-        ${hayMas ? `<button class="pag-btn" onclick="cargarAnimes(${p+1})">›</button>` : ''}
+        <button class="pag-btn" onclick="cargarAnimes(${p+1})" ${p>=totalPags?'disabled':''}>›</button>
     `
-}
-
-// ── TABS ──────────────────────────────────────────────
-function initTabs() {
-    document.querySelectorAll('.genero-tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-            document.querySelectorAll('.genero-tab').forEach(t => t.classList.remove('active'))
-            tab.classList.add('active')
-            generoActivo = tab.dataset.genero
-            labelActivo  = tab.dataset.label
-            queryActual  = ''
-            document.getElementById('searchInput').value = ''
-            document.getElementById('btnLimpiar').style.display = 'none'
-            cargarAnimes(1)
-        })
-    })
 }
 
 // ── SEARCH ────────────────────────────────────────────
@@ -495,20 +413,13 @@ function initSearch() {
             const q = input.value.trim()
             if (q === queryActual) return
             queryActual = q
-            if (!q) { cargarAnimes(1); return }
-            document.querySelectorAll('.genero-tab').forEach(t => t.classList.remove('active'))
             cargarAnimes(1)
         }, 260)
     })
     input.addEventListener('keydown', e => {
         if (e.key === 'Enter') {
             clearTimeout(searchTimer)
-            const q = input.value.trim()
-            queryActual = q
-            if (!q) {
-                document.querySelector('.genero-tab[data-genero=""]').classList.add('active')
-                generoActivo = ''
-            }
+            queryActual = input.value.trim()
             cargarAnimes(1)
         }
     })
@@ -519,10 +430,6 @@ function limpiarBusqueda() {
     input.value = ''
     document.getElementById('btnLimpiar').style.display = 'none'
     queryActual = ''
-    document.querySelector('.genero-tab[data-genero=""]').classList.add('active')
-    document.querySelectorAll('.genero-tab:not([data-genero=""])').forEach(t => t.classList.remove('active'))
-    generoActivo = ''
-    labelActivo  = 'Todos'
     cargarAnimes(1)
     input.focus()
 }
@@ -548,11 +455,6 @@ function esc(str) {
         localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'))
     })
 })()
-
-// ── CSS SPIN ──────────────────────────────────────────
-const style = document.createElement('style')
-style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }'
-document.head.appendChild(style)
 
 // ── ARRANCAR ──────────────────────────────────────────
 init()

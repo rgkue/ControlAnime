@@ -63,6 +63,25 @@ def get_emision(offset: int = 0, limit: int = 28) -> list:
             cursor.close()
 
 
+def get_emision_count() -> int:
+    with get_db() as conn:
+        cursor = conn.cursor()
+        try:
+            cursor.execute("""
+                SELECT COUNT(*)
+                FROM animes_cache
+                WHERE estado = 'current'
+                  AND poster_url IS NOT NULL AND poster_url != ''
+            """)
+            row = cursor.fetchone()
+            return row[0] if row else 0
+        except Exception as e:
+            print(f"[DB ERROR get_emision_count] {e}")
+            return 0
+        finally:
+            cursor.close()
+
+
 def get_por_genero(genero: str, offset: int = 0, limit: int = 28) -> list:
     """
     ILIKE con % para coincidencia parcial.

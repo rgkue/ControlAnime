@@ -17,6 +17,7 @@ from backend.database.connection import guardar_sinopsis_es
 from backend.database.anime_queries import (
     get_top_animes,
     get_emision,
+    get_emision_count,
     get_por_genero,
     get_por_tipo,
     get_por_temporada,
@@ -64,6 +65,7 @@ def emision(request: Request, offset: int = 0, limit: int = 28):
     limit = min(limit, 50)
     return JSONResponse(status_code=200, content={
         "resultados": get_emision(offset=offset, limit=limit),
+        "total":      get_emision_count(),
         "offset":     offset,
         "limit":      limit,
     })

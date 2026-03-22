@@ -32,7 +32,7 @@ def _uid(request: Request) -> int:
 # RANKING GLOBAL (público)
 # ══════════════════════════════════════════════════════════════════════════════
 
-@router.get("/ranking")
+@router.get("/ranking/data")
 def obtener_ranking():
     """Top 50 usuarios con más animes vistos. Perfiles privados aparecen anonimizados."""
     ranking = get_ranking()

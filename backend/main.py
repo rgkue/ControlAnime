@@ -97,6 +97,11 @@ app.add_middleware(
 app.mount("/static", StaticFiles(directory="frontend"), name="static")
 
 
+# --- Ruta de Ranking (Excepcion) ---
+@app.get("/ranking")
+async def ranking_page():
+    return FileResponse("frontend/pages/ranking/index.html")
+
 # ── Routers ───────────────────────────────────────────────────────────────────
 app.include_router(auth.router)
 app.include_router(lista.router)
@@ -153,6 +158,16 @@ async def peliculas_page():
 @app.get("/populares/temporada")
 async def temporada_page():
     return FileResponse("frontend/pages/populares/temporada/index.html")
+
+@app.get("/emision")
+async def emision_page():
+    return FileResponse("frontend/pages/emision/index.html")
+
+@app.get("/configuracion")
+async def configuracion_page():
+    return FileResponse("frontend/pages/configuracion/index.html")
+
+
 
 # ── Handlers de error ─────────────────────────────────────────────────────────
 

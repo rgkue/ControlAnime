@@ -33,9 +33,11 @@ def get_ranking() -> list:
                     COUNT(DISTINCT la.anime_id) FILTER (WHERE la.tipo = 'visto') AS vistos,
                     u.instagram,
                     u.discord,
-                    u.tiktok
+                    u.tiktok,
+                    COALESCE(SUM(ac.episodios) FILTER (WHERE la.tipo = 'visto'), 0) AS eps_totales
                 FROM usuarios u
                 LEFT JOIN lista_animes la ON la.usuario_id = u.id
+                LEFT JOIN animes_cache ac ON ac.id = la.anime_id
                 GROUP BY u.id
                 HAVING COUNT(DISTINCT la.anime_id) FILTER (WHERE la.tipo = 'visto') > 0
                 ORDER BY vistos DESC
@@ -44,13 +46,18 @@ def get_ranking() -> list:
             )
             cols = [
                 "id", "username", "foto_perfil", "perfil_publico",
-                "vistos", "instagram", "discord", "tiktok",
+                "vistos", "instagram", "discord", "tiktok", "eps_totales",
             ]
             resultado = []
             for row in cursor.fetchall():
                 entry = dict(zip(cols, row))
+                # Calcular minutos estimados (24 min promedio por episodio)
+                eps = int(entry.get("eps_totales") or 0)
+                entry["minutos"] = eps * 24
+                entry["horas"]   = round(eps * 24 / 60, 1)
+                del entry["eps_totales"]
                 if not entry["perfil_publico"]:
-                    entry["username"]    = entry["username"] or "Usuario anónimo"
+                    entry["username"]    = entry["username"] or "Otaku anónimo"
                     entry["foto_perfil"] = None
                     entry["instagram"]   = None
                     entry["discord"]     = None

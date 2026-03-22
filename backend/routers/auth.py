@@ -30,6 +30,8 @@ from backend.database.connection import (
     obtener_usuario_por_token, actualizar_perfil,
     invalidar_sesion, guardar_codigo_verificacion,
     obtener_usuario_id_por_token, obtener_usuario_id_por_email,
+    obtener_sesiones_activas, cerrar_sesion_por_id, cerrar_otras_sesiones,
+    eliminar_lista_usuario, eliminar_cuenta_usuario,
 )
 from backend.services.auth_service import generar_codigo, hashear_password
 from backend.services.email_service import enviar_codigo_verificacion, enviar_codigo_recuperacion
@@ -178,6 +180,67 @@ class DatosPassword(BaseModel):
             raise ValueError("La contraseña nueva debe tener al menos 8 caracteres")
         return v
 
+
+
+class DatosApariencia(BaseModel):
+    model_config = {"extra": "forbid"}
+    perfil_header_color:  Optional[str]  = None
+    perfil_header_imagen: Optional[str]  = None
+    perfil_publico:       Optional[bool] = None
+
+    @field_validator("perfil_header_color")
+    @classmethod
+    def color_valido(cls, v):
+        if v is None:
+            return v
+        v = v.strip()
+        if not re.match(r'^#[0-9a-fA-F]{6}$', v):
+            raise ValueError("Color inválido. Usa formato hex (#rrggbb)")
+        return v
+
+    @field_validator("perfil_header_imagen")
+    @classmethod
+    def imagen_tamano(cls, v):
+        if v is None:
+            return v
+        if len(v) > 4_200_000:
+            raise ValueError("Imagen demasiado grande (max 3MB)")
+        return v
+
+
+class DatosEmail(BaseModel):
+    model_config = {"extra": "forbid"}
+    email_nuevo:    str
+    password_actual: str
+
+    @field_validator("email_nuevo")
+    @classmethod
+    def email_valido(cls, v: str) -> str:
+        v = v.strip().lower()
+        if len(v) > 254:
+            raise ValueError("Email demasiado largo")
+        if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]{2,}\.[a-zA-Z]{2,}$', v):
+            raise ValueError("Formato de email inválido")
+        return v
+
+    @field_validator("password_actual")
+    @classmethod
+    def pwd_longitud(cls, v: str) -> str:
+        if len(v) > 128:
+            raise ValueError("Contraseña inválida")
+        return v
+
+
+class DatosEliminarCuenta(BaseModel):
+    model_config = {"extra": "forbid"}
+    password: str
+
+    @field_validator("password")
+    @classmethod
+    def pwd_len(cls, v: str) -> str:
+        if len(v) > 128:
+            raise ValueError("Contraseña inválida")
+        return v
 
 # ── Páginas HTML ──────────────────────────────────────────────────────────────
 
@@ -498,3 +561,159 @@ def cambiar_contrasena_reset(request: Request, datos: dict):
         return JSONResponse(status_code=500, content={"error": "Error interno"})
 
     return JSONResponse(status_code=200, content={"mensaje": "Contraseña actualizada correctamente"})
+
+# ── Configuración — Sesiones ──────────────────────────────────────────────────
+
+@router.get("/sesiones")
+def listar_sesiones(request: Request):
+    token = request.cookies.get("session")
+    usuario_id = obtener_usuario_id_por_token(token)
+    if not usuario_id:
+        return JSONResponse(status_code=401, content={"error": "Sesión inválida"})
+    sesiones = obtener_sesiones_activas(usuario_id)
+    return JSONResponse(status_code=200, content={"sesiones": sesiones, "token_actual": token})
+
+
+@router.delete("/sesiones/{sesion_id}")
+def cerrar_sesion(request: Request, sesion_id: int):
+    token = request.cookies.get("session")
+    usuario_id = obtener_usuario_id_por_token(token)
+    if not usuario_id:
+        return JSONResponse(status_code=401, content={"error": "Sesión inválida"})
+    ok = cerrar_sesion_por_id(sesion_id, usuario_id)
+    if not ok:
+        return JSONResponse(status_code=404, content={"error": "Sesión no encontrada"})
+    return JSONResponse(status_code=200, content={"mensaje": "Sesión cerrada"})
+
+
+@router.post("/sesiones/cerrar-otras")
+def cerrar_otras(request: Request):
+    token = request.cookies.get("session")
+    usuario_id = obtener_usuario_id_por_token(token)
+    if not usuario_id:
+        return JSONResponse(status_code=401, content={"error": "Sesión inválida"})
+    cerrar_otras_sesiones(usuario_id, token)
+    return JSONResponse(status_code=200, content={"mensaje": "Otras sesiones cerradas"})
+
+
+# ── Configuración — Apariencia ────────────────────────────────────────────────
+
+@router.post("/update-apariencia")
+def update_apariencia(request: Request, datos: DatosApariencia):
+    token = request.cookies.get("session")
+    ok = actualizar_perfil(token, datos.model_dump(exclude_none=True))
+    if not ok:
+        return JSONResponse(status_code=500, content={"error": "Error al actualizar"})
+    return JSONResponse(status_code=200, content={"mensaje": "Apariencia actualizada"})
+
+
+# ── Configuración — Email ─────────────────────────────────────────────────────
+
+@router.post("/update-email")
+def update_email(request: Request, datos: DatosEmail):
+    from backend.services.auth_service import verificar_password as vp
+    token = request.cookies.get("session")
+    usuario_id = obtener_usuario_id_por_token(token)
+    if not usuario_id:
+        return JSONResponse(status_code=401, content={"error": "Sesión inválida"})
+
+    # Verificar password actual
+    from backend.database.connection import obtener_usuario_por_token as gup
+    usuario = gup(token)
+    if not usuario:
+        return JSONResponse(status_code=401, content={"error": "Sesión inválida"})
+
+    from backend.database.connection import get_db as gdb
+    with gdb() as conn:
+        cursor = conn.cursor()
+        try:
+            cursor.execute("SELECT password_hash FROM usuarios WHERE id = %s", (usuario_id,))
+            row = cursor.fetchone()
+            if not row or not vp(datos.password_actual, row[0]):
+                return JSONResponse(status_code=400, content={"error": "Contraseña incorrecta"})
+            # Verificar que el nuevo email no esté en uso
+            cursor.execute("SELECT id FROM usuarios WHERE email = %s", (datos.email_nuevo,))
+            if cursor.fetchone():
+                return JSONResponse(status_code=400, content={"error": "Ese email ya está en uso"})
+            # Guardar pending_email y enviar código
+            cursor.execute("UPDATE usuarios SET pending_email = %s WHERE id = %s", (datos.email_nuevo, usuario_id))
+            conn.commit()
+        finally:
+            cursor.close()
+
+    from backend.services.email_service import enviar_codigo_verificacion as env_cod
+    from backend.services.auth_service import generar_codigo as gc
+    from backend.database.connection import guardar_codigo_verificacion as gcv
+    codigo = gc()
+    gcv(usuario_id, codigo)
+    env_cod(datos.email_nuevo, codigo)
+    return JSONResponse(status_code=200, content={"mensaje": "Código enviado al nuevo email"})
+
+
+@router.post("/confirmar-email")
+def confirmar_email(request: Request, datos: dict):
+    token = request.cookies.get("session")
+    usuario_id = obtener_usuario_id_por_token(token)
+    if not usuario_id:
+        return JSONResponse(status_code=401, content={"error": "Sesión inválida"})
+    codigo = str(datos.get("codigo", "")).strip()
+    if not codigo:
+        return JSONResponse(status_code=400, content={"error": "Código requerido"})
+    from backend.database.connection import confirmar_cambio_email
+    resultado = confirmar_cambio_email(usuario_id, codigo)
+    if resultado == "sin_pending":
+        return JSONResponse(status_code=400, content={"error": "No hay cambio de email pendiente"})
+    if resultado == "codigo_invalido":
+        return JSONResponse(status_code=400, content={"error": "Código incorrecto o expirado"})
+    if resultado == "error_db":
+        return JSONResponse(status_code=500, content={"error": "Error interno"})
+    return JSONResponse(status_code=200, content={"mensaje": "Email actualizado correctamente"})
+
+
+# ── Configuración — Zona de peligro ──────────────────────────────────────────
+
+@router.post("/eliminar-lista")
+def eliminar_lista(request: Request, datos: DatosEliminarCuenta):
+    from backend.services.auth_service import verificar_password as vp
+    token = request.cookies.get("session")
+    usuario_id = obtener_usuario_id_por_token(token)
+    if not usuario_id:
+        return JSONResponse(status_code=401, content={"error": "Sesión inválida"})
+    with get_db() as conn:
+        cursor = conn.cursor()
+        try:
+            cursor.execute("SELECT password_hash FROM usuarios WHERE id = %s", (usuario_id,))
+            row = cursor.fetchone()
+            if not row or not vp(datos.password, row[0]):
+                return JSONResponse(status_code=400, content={"error": "Contraseña incorrecta"})
+        finally:
+            cursor.close()
+    ok = eliminar_lista_usuario(usuario_id)
+    if not ok:
+        return JSONResponse(status_code=500, content={"error": "Error al eliminar la lista"})
+    return JSONResponse(status_code=200, content={"mensaje": "Lista eliminada correctamente"})
+
+
+@router.post("/eliminar-cuenta")
+def eliminar_cuenta(request: Request, datos: DatosEliminarCuenta):
+    from backend.services.auth_service import verificar_password as vp
+    token = request.cookies.get("session")
+    usuario_id = obtener_usuario_id_por_token(token)
+    if not usuario_id:
+        return JSONResponse(status_code=401, content={"error": "Sesión inválida"})
+    with get_db() as conn:
+        cursor = conn.cursor()
+        try:
+            cursor.execute("SELECT password_hash FROM usuarios WHERE id = %s", (usuario_id,))
+            row = cursor.fetchone()
+            if not row or not vp(datos.password, row[0]):
+                return JSONResponse(status_code=400, content={"error": "Contraseña incorrecta"})
+        finally:
+            cursor.close()
+    ok = eliminar_cuenta_usuario(usuario_id)
+    if not ok:
+        return JSONResponse(status_code=500, content={"error": "Error al eliminar la cuenta"})
+    respuesta = JSONResponse(status_code=200, content={"mensaje": "Cuenta eliminada"})
+    respuesta.set_cookie(key="session",    value="", httponly=True,  samesite="lax", path="/", max_age=0)
+    respuesta.set_cookie(key="csrf_token", value="", httponly=False, samesite="lax", path="/", max_age=0)
+    return respuesta

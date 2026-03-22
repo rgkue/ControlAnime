@@ -9,14 +9,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/static/shared/dashboard.css">
 <style>
-/* ── USER CHIP (topbar) ────────────────────────── */
-.topbar-user { margin-left: auto; display: flex; align-items: center; }
-.user-chip { display: flex; align-items: center; gap: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 40px; padding: 6px 6px 6px 14px; cursor: pointer; transition: border-color 0.2s; }
-.user-chip:hover { border-color: var(--accent); }
-.topbar-email { font-size: 0.75rem; color: var(--muted); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.topbar-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--accent); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 600; color: #000; flex-shrink: 0; }
-.topbar-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-
 /* ── PAGE BODY ─────────────────────────────────── */
 .page-body {
     padding: 24px 28px 60px;
@@ -232,10 +224,8 @@
     <div class="topbar">
         <span class="topbar-title">INICIO</span>
         <div class="topbar-user">
-            <div class="user-chip" onclick="location.href='/configuracion'" title="Configuración">
-                <span class="topbar-email" id="topbarEmail"></span>
-                <div class="topbar-avatar" id="topbarAvatar"></div>
-            </div>
+            <span class="topbar-email" id="topbarEmail"></span>
+            <div class="topbar-avatar" id="topbarAvatar" onclick="location.href='/configuracion'"></div>
         </div>
     </div>
 

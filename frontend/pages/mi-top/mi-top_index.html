@@ -62,17 +62,13 @@ body { font-family: 'DM Sans', sans-serif; font-size: 14px; background: var(--bg
 /* Topbar */
 .topbar { position: sticky; top: 0; z-index: 40; height: var(--topbar-h); background: rgba(9,9,9,0.88); backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 36px; gap: 10px; }
 .topbar-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: 0.1em; color: var(--text); }
-.topbar-user { margin-left: auto; display: flex; align-items: center; }
-.user-chip {
-    display: flex; align-items: center; gap: 10px;
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 40px; padding: 6px 6px 6px 14px;
-    cursor: pointer; transition: border-color 0.2s;
-}
-.user-chip:hover { border-color: var(--accent); }
-.topbar-email { font-size: 0.75rem; color: var(--muted); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.topbar-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--accent); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 600; color: #000; flex-shrink: 0; }
-.topbar-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.topbar-user { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.topbar-email { font-size: 0.75rem; color: var(--muted); }
+.topbar-user { cursor: pointer; }
+.topbar-user:hover .topbar-email { color: var(--accent); }
+.topbar-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--surface2); border: 2px solid var(--accent); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 600; color: var(--muted2); flex-shrink: 0; transition: box-shadow 0.15s; }
+.topbar-avatar:hover { box-shadow: 0 0 0 3px var(--accent-dim); }
+.topbar-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
 /* ── LOADING ──────────────────────────────────────── */
 .loading-state { flex: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; color: var(--muted); }
@@ -363,11 +359,9 @@ body { font-family: 'DM Sans', sans-serif; font-size: 14px; background: var(--bg
 <div class="main">
     <div class="topbar">
         <span class="topbar-title">MI TOP 5</span>
-        <div class="topbar-user">
-            <div class="user-chip" onclick="location.href='/configuracion'" title="Configuración">
-                <span class="topbar-email" id="topbarEmail"></span>
-                <div class="topbar-avatar" id="topbarAvatar"></div>
-            </div>
+        <div class="topbar-user" onclick="location.href='/configuracion'" title="Configuración">
+            <span class="topbar-email" id="topbarEmail"></span>
+            <div class="topbar-avatar" id="topbarAvatar"></div>
         </div>
     </div>
 
