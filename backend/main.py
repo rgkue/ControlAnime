@@ -163,6 +163,10 @@ async def temporada_page():
 async def emision_page():
     return FileResponse("frontend/pages/emision/index.html")
 
+@app.get("/usuario/{id}")
+async def usuario_page(id: str):
+    return FileResponse("frontend/pages/usuarios/index.html")
+
 @app.get("/configuracion")
 async def configuracion_page():
     return FileResponse("frontend/pages/configuracion/index.html")

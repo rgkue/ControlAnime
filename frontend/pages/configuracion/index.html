@@ -172,7 +172,14 @@ body { font-family: 'DM Sans', sans-serif; font-size: 14px; background: var(--bg
 .toast.ok  { border-color: var(--green); color: var(--green); }
 .toast.err { border-color: var(--red);   color: var(--red); }
 
-/* ── RESPONSIVE ── */
+/* ── DENSITY SELECTOR ── */
+.density-selector { display: flex; gap: 10px; margin-top: 4px; }
+.density-opt { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 16px; border-radius: 10px; border: 1px solid var(--border2); background: var(--surface2); color: var(--muted2); cursor: pointer; font-family: inherit; font-size: 0.78rem; font-weight: 500; transition: all 0.15s; flex: 1; }
+.density-opt svg { width: 40px; height: 32px; }
+.density-opt:hover { color: var(--text); border-color: var(--muted); }
+.density-opt.active { color: var(--accent); border-color: var(--accent); background: var(--accent-dim); }
+
+
 @media (max-width: 860px) {
     .sidebar { display: none; }
     .main { margin-left: 0; }
@@ -276,15 +283,21 @@ body { font-family: 'DM Sans', sans-serif; font-size: 14px; background: var(--bg
 
                 <div class="field">
                     <label class="field-label">Instagram</label>
-                    <input class="field-input" id="inputInstagram" type="text" placeholder="usuario" maxlength="64">
+                    <input class="field-input" id="inputInstagram" type="url" placeholder="https://instagram.com/tu_usuario" maxlength="128">
+                    <span class="field-hint">Ej: https://instagram.com/tu_usuario</span>
+                    <span class="feedback err" id="errInstagram" style="display:none"></span>
                 </div>
                 <div class="field">
                     <label class="field-label">Discord</label>
-                    <input class="field-input" id="inputDiscord" type="text" placeholder="usuario" maxlength="64">
+                    <input class="field-input" id="inputDiscord" type="url" placeholder="https://discord.com/users/tu_id" maxlength="128">
+                    <span class="field-hint">Ej: https://discord.com/users/tu_id</span>
+                    <span class="feedback err" id="errDiscord" style="display:none"></span>
                 </div>
                 <div class="field">
                     <label class="field-label">TikTok</label>
-                    <input class="field-input" id="inputTiktok" type="text" placeholder="usuario" maxlength="64">
+                    <input class="field-input" id="inputTiktok" type="url" placeholder="https://tiktok.com/@tu_usuario" maxlength="128">
+                    <span class="field-hint">Ej: https://tiktok.com/@tu_usuario</span>
+                    <span class="feedback err" id="errTiktok" style="display:none"></span>
                 </div>
 
                 <div class="btn-row">
@@ -379,7 +392,46 @@ body { font-family: 'DM Sans', sans-serif; font-size: 14px; background: var(--bg
 
                 <div class="divider"></div>
 
-                <div class="section-title">Privacidad</div>
+                <div class="section-title">Cards de anime</div>
+                <div class="section-desc">Ajusta el tamaño de las tarjetas en los grids de anime.</div>
+
+                <div class="density-selector" id="densitySelector">
+                    <button class="density-opt" data-val="compacto" title="Compacto">
+                        <svg viewBox="0 0 40 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="1" y="1" width="8" height="10" rx="1.5" fill="currentColor" opacity=".9"/>
+                            <rect x="11" y="1" width="8" height="10" rx="1.5" fill="currentColor" opacity=".9"/>
+                            <rect x="21" y="1" width="8" height="10" rx="1.5" fill="currentColor" opacity=".9"/>
+                            <rect x="31" y="1" width="8" height="10" rx="1.5" fill="currentColor" opacity=".9"/>
+                            <rect x="1" y="13" width="8" height="10" rx="1.5" fill="currentColor" opacity=".9"/>
+                            <rect x="11" y="13" width="8" height="10" rx="1.5" fill="currentColor" opacity=".9"/>
+                            <rect x="21" y="13" width="8" height="10" rx="1.5" fill="currentColor" opacity=".9"/>
+                            <rect x="31" y="13" width="8" height="10" rx="1.5" fill="currentColor" opacity=".9"/>
+                        </svg>
+                        <span>Compacto</span>
+                    </button>
+                    <button class="density-opt" data-val="normal" title="Normal">
+                        <svg viewBox="0 0 40 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="1" y="1" width="11" height="14" rx="1.5" fill="currentColor" opacity=".9"/>
+                            <rect x="15" y="1" width="11" height="14" rx="1.5" fill="currentColor" opacity=".9"/>
+                            <rect x="29" y="1" width="11" height="14" rx="1.5" fill="currentColor" opacity=".9"/>
+                            <rect x="1" y="17" width="11" height="14" rx="1.5" fill="currentColor" opacity=".9"/>
+                            <rect x="15" y="17" width="11" height="14" rx="1.5" fill="currentColor" opacity=".9"/>
+                            <rect x="29" y="17" width="11" height="14" rx="1.5" fill="currentColor" opacity=".9"/>
+                        </svg>
+                        <span>Normal</span>
+                    </button>
+                    <button class="density-opt" data-val="espacioso" title="Espacioso">
+                        <svg viewBox="0 0 40 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="1" y="1" width="17" height="21" rx="1.5" fill="currentColor" opacity=".9"/>
+                            <rect x="22" y="1" width="17" height="21" rx="1.5" fill="currentColor" opacity=".9"/>
+                            <rect x="1" y="24" width="17" height="7" rx="1.5" fill="currentColor" opacity=".4"/>
+                            <rect x="22" y="24" width="17" height="7" rx="1.5" fill="currentColor" opacity=".4"/>
+                        </svg>
+                        <span>Espacioso</span>
+                    </button>
+                </div>
+
+                <div class="divider"></div>
 
                 <div class="toggle-row">
                     <div class="toggle-info">
@@ -528,6 +580,9 @@ async function init() {
     document.getElementById('togglePublico').checked = me.perfil_publico || false
     document.getElementById('headerNamePreview').textContent = me.username || me.email?.split('@')[0] || '—'
 
+    // Densidad
+    initDensidad()
+
     // Sesiones
     cargarSesiones()
 
@@ -579,13 +634,44 @@ function quitarFoto() {
     prev.textContent = (me.username || me.email || '?')[0].toUpperCase()
 }
 
+const SOCIAL_RULES = {
+    instagram: { domains: ['instagram.com', 'www.instagram.com'], label: 'Instagram' },
+    discord:   { domains: ['discord.com', 'www.discord.com', 'discord.gg'], label: 'Discord' },
+    tiktok:    { domains: ['tiktok.com', 'www.tiktok.com'], label: 'TikTok' },
+}
+
+function validarRedSocial(id, rules) {
+    const val = document.getElementById(id).value.trim()
+    const errEl = document.getElementById('err' + id.replace('input', '').replace(/^./, c => c.toUpperCase()))
+    if (!val) { errEl.style.display = 'none'; return val }
+    try {
+        const url = new URL(val)
+        if (url.protocol !== 'https:') throw new Error()
+        const host = url.hostname.toLowerCase()
+        if (!rules.domains.some(d => host === d)) throw new Error()
+        errEl.style.display = 'none'
+        return val
+    } catch {
+        errEl.textContent = `URL inválida. Debe ser https://${rules.domains[0]}/...`
+        errEl.style.display = 'block'
+        document.getElementById(id).style.borderColor = 'var(--red)'
+        setTimeout(() => document.getElementById(id).style.borderColor = '', 2000)
+        return false
+    }
+}
+
 async function guardarPerfil() {
     fb('fbPerfil', '')
+    const instagram = validarRedSocial('inputInstagram', SOCIAL_RULES.instagram)
+    const discord   = validarRedSocial('inputDiscord',   SOCIAL_RULES.discord)
+    const tiktok    = validarRedSocial('inputTiktok',    SOCIAL_RULES.tiktok)
+    if (instagram === false || discord === false || tiktok === false) return
+
     const payload = {
         username:  document.getElementById('inputUsername').value.trim() || null,
-        instagram: document.getElementById('inputInstagram').value.trim() || null,
-        discord:   document.getElementById('inputDiscord').value.trim() || null,
-        tiktok:    document.getElementById('inputTiktok').value.trim() || null,
+        instagram: instagram || null,
+        discord:   discord   || null,
+        tiktok:    tiktok    || null,
     }
     if (fotoBase64 !== null) payload.foto_perfil = fotoBase64
 
@@ -663,6 +749,19 @@ function syncColorHex(val) {
         document.getElementById('headerColor').value = val
         document.getElementById('headerPreview').style.background = val
     }
+}
+
+// ── DENSIDAD DE CARDS ─────────────────────────────────
+function initDensidad() {
+    const saved = localStorage.getItem('ca_densidad') || 'compacto'
+    setDensidad(saved, false)
+    document.querySelectorAll('.density-opt').forEach(btn => {
+        btn.addEventListener('click', () => setDensidad(btn.dataset.val, true))
+    })
+}
+function setDensidad(val, save) {
+    document.querySelectorAll('.density-opt').forEach(b => b.classList.toggle('active', b.dataset.val === val))
+    if (save) localStorage.setItem('ca_densidad', val)
 }
 function handleHeaderImg(input) {
     const file = input.files[0]
