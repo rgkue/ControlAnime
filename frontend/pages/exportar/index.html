@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exportar · ControlAnime</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="icon" type="image/x-icon" href="/static/logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg:           #090909;
+    --surface:      #111111;
+    --surface2:     #181818;
+    --surface3:     #1e1e1e;
+    --border:       #222222;
+    --border2:      #2a2a2a;
+    --accent:       #f97316;
+    --accent-dim:   rgba(249,115,22,0.12);
+    --text:         #e8e8e8;
+    --muted:        #666;
+    --muted2:       #888;
+    --green:        #4ade80;
+    --green-dim:    rgba(74,222,128,0.1);
+    --blue:         #60a5fa;
+    --blue-dim:     rgba(96,165,250,0.1);
+    --red:          #f87171;
+    --sidebar-w:    240px;
+    --sidebar-collapsed: 64px;
+    --topbar-h:     58px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'DM Sans', sans-serif; font-size: 14px; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; }
+
+/* ── SIDEBAR ── */
+.sidebar { width: var(--sidebar-w); background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; transition: width 0.25s; overflow: hidden; flex-shrink: 0; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; }
+.sidebar.collapsed { width: var(--sidebar-collapsed); }
+.sidebar-header { display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid var(--border); height: var(--topbar-h); overflow: hidden; flex-shrink: 0; }
+.logo { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.06em; color: var(--text); text-decoration: none; white-space: nowrap; transition: opacity 0.25s; }
+.logo span { color: var(--accent); }
+.sidebar.collapsed .logo { opacity: 0; pointer-events: none; width: 0; }
+.collapse-btn { background: none; border: none; color: var(--muted); cursor: pointer; padding: 6px; border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: color 0.25s, background 0.25s, transform 0.25s; flex-shrink: 0; }
+.collapse-btn:hover { color: var(--accent); background: var(--accent-dim); }
+.sidebar.collapsed .collapse-btn { transform: rotate(180deg); }
+.sidebar-nav { flex: 1; padding: 12px 8px; display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
+.nav-item { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 6px; color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 400; white-space: nowrap; transition: color 0.25s, background 0.25s; cursor: pointer; border: none; background: none; width: 100%; }
+.nav-item:hover { color: var(--text); background: var(--surface2); }
+.nav-item.active { color: var(--accent); background: var(--accent-dim); }
+.nav-item.logout:hover { color: var(--red); background: rgba(248,113,113,0.1); }
+.nav-icon { width: 18px; height: 18px; flex-shrink: 0; }
+.nav-label { transition: opacity 0.25s, width 0.25s; overflow: hidden; }
+.sidebar.collapsed .nav-label { opacity: 0; width: 0; }
+.sidebar-footer { padding: 8px 8px 16px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 2px; }
+
+/* ── MAIN ── */
+.main { margin-left: var(--sidebar-w); flex: 1; min-height: 100vh; display: flex; flex-direction: column; transition: margin-left 0.25s; }
+.sidebar.collapsed ~ .main { margin-left: var(--sidebar-collapsed); }
+
+/* ── TOPBAR ── */
+.topbar { position: sticky; top: 0; z-index: 40; height: var(--topbar-h); background: rgba(9,9,9,0.9); backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 36px; gap: 12px; flex-shrink: 0; }
+.topbar-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: 0.1em; color: var(--text); }
+.topbar-user { margin-left: auto; display: flex; align-items: center; }
+.user-chip { display: flex; align-items: center; gap: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 40px; padding: 6px 6px 6px 14px; cursor: pointer; transition: border-color 0.2s; }
+.user-chip:hover { border-color: var(--accent); }
+.topbar-email { font-size: 0.75rem; color: var(--muted); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.topbar-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--accent); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 600; color: #000; flex-shrink: 0; }
+.topbar-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+/* ── PAGE ── */
+.page-body { padding: 28px 36px 60px; width: 100%; }
+
+/* ── STAT CARDS ── */
+.stat-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+.stat-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 20px 18px; position: relative; overflow: hidden; transition: border-color 0.15s; }
+.stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--card-color, var(--border2)); }
+.stat-card:hover { border-color: var(--card-color, var(--border2)); }
+.stat-card-val { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; line-height: 1; color: var(--card-color, var(--text)); }
+.stat-card-label { font-size: 0.62rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+
+/* ── SECCIÓN ── */
+.section-block { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 22px 24px; margin-bottom: 20px; }
+.section-title { font-family: 'Bebas Neue', sans-serif; font-size: 0.88rem; letter-spacing: 0.12em; color: var(--text); margin-bottom: 4px; }
+.section-desc { font-size: 0.76rem; color: var(--muted); margin-bottom: 18px; }
+
+/* ── FILTROS ── */
+.filtros { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
+.filtros-label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-right: 4px; }
+.filtro-btn { padding: 7px 16px; border-radius: 20px; border: 1px solid var(--border2); background: var(--surface3); color: var(--muted2); font-size: 0.8rem; font-family: inherit; cursor: pointer; transition: all 0.15s; }
+.filtro-btn:hover { color: var(--text); border-color: var(--muted); }
+.filtro-btn.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 600; }
+
+/* ── BOTONES DE EXPORT ── */
+.export-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+.export-btn {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 18px; border-radius: 10px;
+    border: 1px solid var(--border2); background: var(--surface3);
+    cursor: pointer; transition: all 0.15s; font-family: inherit;
+    text-align: left; color: var(--text);
+}
+.export-btn:hover { border-color: var(--btn-color, var(--muted)); background: var(--surface2); }
+.export-btn:active { transform: scale(0.98); }
+.export-btn.loading { opacity: 0.6; cursor: not-allowed; pointer-events: none; }
+.export-btn-icon {
+    width: 38px; height: 38px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--btn-bg, var(--surface2)); flex-shrink: 0;
+}
+.export-btn-icon svg { width: 20px; height: 20px; }
+.export-btn-name { font-size: 0.9rem; font-weight: 600; }
+.export-btn-sub  { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+
+/* ── VISTA PREVIA ── */
+.preview-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.preview-count { font-size: 0.78rem; color: var(--muted); }
+
+.preview-table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
+.preview-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+.preview-table th {
+    background: var(--surface3); color: var(--muted); font-size: 0.6rem;
+    font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 10px 12px; text-align: left; white-space: nowrap;
+    border-bottom: 1px solid var(--border2);
+}
+.preview-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; white-space: nowrap; }
+.preview-table tr:last-child td { border-bottom: none; }
+.preview-table tr:hover td { background: var(--surface3); }
+.td-num { color: var(--muted); font-size: 0.72rem; width: 30px; }
+.td-titulo { max-width: 320px; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
+.td-rating { color: var(--accent); font-weight: 500; }
+.td-eps { color: var(--muted2); }
+.td-fecha { color: var(--muted); font-size: 0.72rem; }
+
+.tipo-badge {
+    display: inline-flex; align-items: center;
+    padding: 2px 9px; border-radius: 4px;
+    font-size: 0.65rem; font-weight: 700; letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+.tipo-visto     { background: rgba(74,222,128,0.12); color: var(--green); border: 1px solid rgba(74,222,128,0.2); }
+.tipo-pendiente { background: rgba(96,165,250,0.12); color: var(--blue);  border: 1px solid rgba(96,165,250,0.2); }
+.tipo-favorito  { background: rgba(244,114,182,0.12); color: #f472b6; border: 1px solid rgba(244,114,182,0.2); }
+
+.preview-more { text-align: center; padding: 12px; font-size: 0.76rem; color: var(--muted); border-top: 1px solid var(--border); }
+
+/* ── HISTORIAL ── */
+.historial-list { display: flex; flex-direction: column; gap: 1px; }
+.historial-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 14px; background: var(--surface3);
+    transition: background 0.15s;
+}
+.historial-item:first-child { border-radius: 8px 8px 0 0; }
+.historial-item:last-child  { border-radius: 0 0 8px 8px; }
+.historial-item:only-child  { border-radius: 8px; }
+.historial-item:hover { background: var(--surface2); }
+.hist-icon { width: 34px; height: 34px; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.hist-icon.xlsx { background: rgba(74,222,128,0.12); }
+.hist-icon.json { background: rgba(96,165,250,0.12); }
+.hist-icon svg  { width: 17px; height: 17px; }
+.hist-info { flex: 1; min-width: 0; }
+.hist-name  { font-size: 0.84rem; font-weight: 500; }
+.hist-sub   { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+.hist-badge { font-size: 0.6rem; font-weight: 700; padding: 3px 8px; border-radius: 4px; letter-spacing: 0.08em; }
+.hist-badge.xlsx { background: rgba(74,222,128,0.15); color: var(--green); border: 1px solid rgba(74,222,128,0.25); }
+.hist-badge.json { background: rgba(96,165,250,0.15); color: var(--blue);  border: 1px solid rgba(96,165,250,0.25); }
+.hist-empty { padding: 24px; text-align: center; color: var(--muted); font-size: 0.82rem; background: var(--surface3); border-radius: 8px; }
+.hist-clear { font-size: 0.72rem; color: var(--muted); cursor: pointer; background: none; border: none; font-family: inherit; transition: color 0.15s; }
+.hist-clear:hover { color: var(--red); }
+
+/* ── LOADER ── */
+.loader { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 0; gap: 14px; color: var(--muted); }
+.spinner { width: 26px; height: 26px; border: 2.5px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+.fade-in { animation: fadeUp 0.3s ease forwards; }
+
+/* ── TOAST ── */
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(16px); background: var(--surface2); border: 1px solid var(--border2); border-radius: 8px; padding: 10px 18px; font-size: 0.82rem; font-weight: 500; opacity: 0; transition: all 0.22s; z-index: 999; white-space: nowrap; box-shadow: 0 8px 32px rgba(0,0,0,0.5); pointer-events: none; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.ok  { border-color: var(--green); color: var(--green); }
+.toast.err { border-color: var(--red);   color: var(--red); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 860px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; }
+    .page-body { padding: 20px 16px 48px; }
+    .topbar { padding: 0 16px; }
+    .topbar-email { display: none; }
+    .stat-cards { grid-template-columns: repeat(2, 1fr); }
+    .export-btns { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <a class="logo" href="/dashboard"><span>CONTROL</span>ANIME</a>
+        <button class="collapse-btn" id="collapseBtn" title="Colapsar">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+    </div>
+    <div class="sidebar-nav">
+        <a class="nav-item" href="/dashboard"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span class="nav-label">Inicio</span></a>
+        <a class="nav-item" href="/mi-lista"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span class="nav-label">Mi lista</span></a>
+        <a class="nav-item" href="/mi-top"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span class="nav-label">Mi Top 5</span></a>
+        <a class="nav-item" href="/populares"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg><span class="nav-label">Tendencias</span></a>
+        <a class="nav-item" href="/emision"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg><span class="nav-label">En emisión</span></a>
+        <a class="nav-item" href="/ranking"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 20 18 10"/><polyline points="12 20 12 4"/><polyline points="6 20 6 14"/></svg><span class="nav-label">Ranking</span></a>
+        <a class="nav-item" href="/estadisticas"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg><span class="nav-label">Estadísticas</span></a>
+        <a class="nav-item active" href="/exportar"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span class="nav-label">Exportar</span></a>
+    </div>
+    <div class="sidebar-footer">
+        <a class="nav-item" href="/configuracion"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span class="nav-label">Configuración</span></a>
+        <a class="nav-item logout" href="#" onclick="event.preventDefault();fetch('/logout',{method:'POST'}).finally(()=>location.href='/login')"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span class="nav-label">Cerrar sesión</span></a>
+    </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+    <div class="topbar">
+        <span class="topbar-title">EXPORTAR LISTA</span>
+        <div class="topbar-user">
+            <div class="user-chip" onclick="location.href='/configuracion'" title="Configuración">
+                <span class="topbar-email" id="topbarEmail"></span>
+                <div class="topbar-avatar" id="topbarAvatar"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-body" id="pageBody">
+        <div class="loader"><div class="spinner"></div><span>Cargando…</span></div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Estado ────────────────────────────────────────────
+let tipoActivo = 'todo'
+let animes = []
+let resumen = { total: 0, vistos: 0, pendientes: 0, favoritos: 0 }
+
+const HIST_KEY = 'ca_export_historial_v2'
+
+// ── CSRF ──────────────────────────────────────────────
+function csrf() {
+    const m = document.cookie.match(/(?:^|;\s*)csrf_token=([^;]+)/)
+    return m ? { 'X-CSRF-Token': decodeURIComponent(m[1]) } : {}
+}
+
+function esc(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+}
+
+let toastTimer
+function toast(msg, tipo = 'ok') {
+    const el = document.getElementById('toast')
+    el.textContent = msg
+    el.className = `toast show ${tipo}`
+    clearTimeout(toastTimer)
+    toastTimer = setTimeout(() => el.classList.remove('show'), 3000)
+}
+
+// ── INIT ──────────────────────────────────────────────
+async function init() {
+    // Sidebar
+    const sidebar = document.getElementById('sidebar')
+    const btn     = document.getElementById('collapseBtn')
+    if (localStorage.getItem('sidebarCollapsed') === 'true') sidebar.classList.add('collapsed')
+    btn.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed')
+        localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'))
+    })
+
+    // Topbar
+    try {
+        const res = await fetch('/me')
+        if (res.status === 401) { location.href = '/login'; return }
+        const me = await res.json()
+        document.getElementById('topbarEmail').textContent = me.email || ''
+        const av = document.getElementById('topbarAvatar')
+        if (me.foto_perfil) av.innerHTML = `<img src="${me.foto_perfil}" alt="avatar">`
+        else av.textContent = (me.email || '?').slice(0, 2).toUpperCase()
+    } catch(e) { location.href = '/login'; return }
+
+    // Cargar resumen inicial (todo)
+    await cargarDatos('todo')
+}
+
+// ── CARGAR DATOS ──────────────────────────────────────
+async function cargarDatos(tipo) {
+    tipoActivo = tipo
+    try {
+        const res  = await fetch(`/exportar/data?tipo=${tipo}`)
+        if (res.status === 401) { location.href = '/login'; return }
+        const data = await res.json()
+        animes = data.animes || []
+
+        // Resumen solo se actualiza con 'todo'
+        if (tipo === 'todo') {
+            resumen.total      = data.total
+            resumen.vistos     = animes.filter(a => a.tipo === 'visto').length
+            resumen.pendientes = animes.filter(a => a.tipo === 'pendiente').length
+            resumen.favoritos  = animes.filter(a => a.tipo === 'favorito').length
+        }
+
+        renderPage()
+    } catch(e) {
+        document.getElementById('pageBody').innerHTML =
+            '<div class="loader"><span style="color:var(--red)">Error al cargar la lista.</span></div>'
+    }
+}
+
+// ── RENDER ────────────────────────────────────────────
+function renderPage() {
+    const html = `
+    <div class="fade-in">
+
+        <!-- STAT CARDS -->
+        <div class="stat-cards">
+            <div class="stat-card" style="--card-color:var(--text)">
+                <div class="stat-card-val">${resumen.total}</div>
+                <div class="stat-card-label">Total</div>
+            </div>
+            <div class="stat-card" style="--card-color:var(--accent)">
+                <div class="stat-card-val">${resumen.vistos}</div>
+                <div class="stat-card-label">Vistos</div>
+            </div>
+            <div class="stat-card" style="--card-color:var(--blue)">
+                <div class="stat-card-val" style="color:var(--blue)">${resumen.pendientes}</div>
+                <div class="stat-card-label">Pendientes</div>
+            </div>
+            <div class="stat-card" style="--card-color:#f472b6">
+                <div class="stat-card-val" style="color:#f472b6">${resumen.favoritos}</div>
+                <div class="stat-card-label">Favoritos</div>
+            </div>
+        </div>
+
+        <!-- EXPORTAR -->
+        <div class="section-block">
+            <div class="section-title">Exportar lista</div>
+            <div class="section-desc">Descarga toda tu lista o filtra por categoría antes de exportar.</div>
+
+            <div class="filtros">
+                <span class="filtros-label">Categoría</span>
+                ${['todo','visto','pendiente','favorito'].map(t => `
+                <button class="filtro-btn ${tipoActivo === t ? 'active' : ''}"
+                    onclick="cambiarFiltro('${t}')">
+                    ${t === 'todo' ? 'Todo' : t.charAt(0).toUpperCase() + t.slice(1) + 's'}
+                </button>`).join('')}
+            </div>
+
+            <div class="export-btns">
+                <button class="export-btn" id="btnXlsx"
+                    style="--btn-color:var(--green);--btn-bg:rgba(74,222,128,0.08)"
+                    onclick="exportar('xlsx')">
+                    <div class="export-btn-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.8">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="8" y1="13" x2="16" y2="13"/>
+                            <line x1="8" y1="17" x2="16" y2="17"/>
+                            <line x1="8" y1="9" x2="10" y2="9"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="export-btn-name">Excel (.xlsx)</div>
+                        <div class="export-btn-sub">Plantilla ControlAnime con estilos</div>
+                    </div>
+                </button>
+                <button class="export-btn" id="btnJson"
+                    style="--btn-color:var(--blue);--btn-bg:rgba(96,165,250,0.08)"
+                    onclick="exportar('json')">
+                    <div class="export-btn-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.8">
+                            <polyline points="16 18 22 12 16 6"/>
+                            <polyline points="8 6 2 12 8 18"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="export-btn-name">JSON</div>
+                        <div class="export-btn-sub">Para importar en otras apps</div>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <!-- VISTA PREVIA -->
+        <div class="section-block">
+            <div class="preview-header">
+                <div class="section-title">Vista previa <span style="color:var(--muted);font-size:0.8rem;font-family:'DM Sans',sans-serif;font-weight:400">(${animes.length})</span></div>
+            </div>
+            ${renderPreview()}
+        </div>
+
+        <!-- HISTORIAL -->
+        <div class="section-block">
+            <div class="preview-header">
+                <div class="section-title">Historial de exports</div>
+                <button class="hist-clear" onclick="limpiarHistorial()">Limpiar</button>
+            </div>
+            <div id="historialWrap">${renderHistorial()}</div>
+        </div>
+
+    </div>`
+
+    document.getElementById('pageBody').innerHTML = html
+}
+
+function renderPreview() {
+    if (!animes.length) {
+        return `<div style="text-align:center;padding:28px;color:var(--muted);font-size:0.84rem">No hay animes en esta categoría.</div>`
+    }
+
+    const MAX = 10
+    const visibles = animes.slice(0, MAX)
+
+    const rows = visibles.map((a, i) => {
+        const tipoClass = { visto: 'tipo-visto', pendiente: 'tipo-pendiente', favorito: 'tipo-favorito' }[a.tipo] || ''
+        const tipoLabel = { visto: 'Visto', pendiente: 'Pendiente', favorito: 'Favorito' }[a.tipo] || a.tipo
+        const fecha = a.agregado_en ? a.agregado_en.slice(0, 10) : '—'
+        const eps   = a.episodios ? `${a.episodios} ep.` : '—'
+        return `
+        <tr>
+            <td class="td-num">${i + 1}</td>
+            <td class="td-titulo" title="${esc(a.titulo)}">${esc(a.titulo)}</td>
+            <td><span class="tipo-badge ${tipoClass}">${tipoLabel}</span></td>
+            <td class="td-rating">${a.rating ?? '—'}</td>
+            <td class="td-eps">${eps}</td>
+            <td class="td-fecha">${fecha}</td>
+        </tr>`
+    }).join('')
+
+    return `
+    <div class="preview-table-wrap">
+        <table class="preview-table">
+            <thead>
+                <tr>
+                    <th>#</th><th>Título</th><th>Categoría</th>
+                    <th>Rating</th><th>Episodios</th><th>Agregado</th>
+                </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+        </table>
+        ${animes.length > MAX
+            ? `<div class="preview-more">… y ${animes.length - MAX} más. Descarga el archivo para ver todos.</div>`
+            : ''}
+    </div>`
+}
+
+// ── HISTORIAL ─────────────────────────────────────────
+function getHistorial() {
+    try {
+        const raw = localStorage.getItem(HIST_KEY)
+        if (!raw) return []
+        const parsed = JSON.parse(raw)
+        // Validar que cada entrada tenga los campos correctos
+        return parsed.filter(e =>
+            e && typeof e.formato === 'string' &&
+            typeof e.cantidad === 'number' &&
+            typeof e.filtro === 'string' &&
+            typeof e.fecha === 'string'
+        )
+    } catch(e) { return [] }
+}
+
+function guardarHistorial(formato, cantidad, filtro) {
+    const hist = getHistorial()
+    hist.unshift({
+        formato,
+        cantidad,
+        filtro,
+        fecha: new Date().toISOString(),
+    })
+    // Mantener solo los últimos 20
+    localStorage.setItem(HIST_KEY, JSON.stringify(hist.slice(0, 20)))
+}
+
+function limpiarHistorial() {
+    localStorage.removeItem(HIST_KEY)
+    document.getElementById('historialWrap').innerHTML = renderHistorial()
+}
+
+function renderHistorial() {
+    const hist = getHistorial()
+    if (!hist.length) {
+        return `<div class="hist-empty">Aún no has exportado ningún archivo.</div>`
+    }
+
+    return `<div class="historial-list">${
+        hist.map(e => {
+            let fechaStr = '—'
+            try {
+                fechaStr = new Date(e.fecha).toLocaleDateString('es-ES', {
+                    day: '2-digit', month: 'numeric', year: '2-digit',
+                    hour: '2-digit', minute: '2-digit'
+                })
+            } catch(_) {}
+
+            const filtroLabel = { todo: 'todo', visto: 'vistos', pendiente: 'pendientes', favorito: 'favoritos' }[e.filtro] || e.filtro
+            const fmt = e.formato.toLowerCase()
+
+            return `
+            <div class="historial-item">
+                <div class="hist-icon ${fmt}">
+                    ${fmt === 'xlsx'
+                        ? `<svg viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`
+                        : `<svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.8"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`}
+                </div>
+                <div class="hist-info">
+                    <div class="hist-name">Exportación ${fmt.toUpperCase()}</div>
+                    <div class="hist-sub">${e.cantidad} anime${e.cantidad !== 1 ? 's' : ''} · filtro: ${filtroLabel} · ${fechaStr}</div>
+                </div>
+                <span class="hist-badge ${fmt}">${fmt.toUpperCase()}</span>
+            </div>`
+        }).join('')
+    }</div>`
+}
+
+// ── FILTRO ────────────────────────────────────────────
+async function cambiarFiltro(tipo) {
+    if (tipo === tipoActivo) return
+    await cargarDatos(tipo)
+}
+
+// ── EXPORTAR ──────────────────────────────────────────
+async function exportar(formato) {
+    const btnId = formato === 'xlsx' ? 'btnXlsx' : 'btnJson'
+    const btn   = document.getElementById(btnId)
+    if (!btn) return
+
+    btn.classList.add('loading')
+    btn.querySelector('.export-btn-sub').textContent = 'Generando archivo…'
+
+    try {
+        const res = await fetch(`/exportar/${formato}?tipo=${tipoActivo}`)
+        if (!res.ok) throw new Error()
+
+        const blob = await res.blob()
+        const url  = URL.createObjectURL(blob)
+        const a    = document.createElement('a')
+
+        // Obtener nombre del header si está disponible
+        const disp = res.headers.get('Content-Disposition') || ''
+        const match = disp.match(/filename="?([^"]+)"?/)
+        a.download = match ? match[1] : `controlanime_${tipoActivo}.${formato}`
+        a.href = url
+        a.click()
+        URL.revokeObjectURL(url)
+
+        // Guardar en historial
+        guardarHistorial(formato.toUpperCase(), animes.length, tipoActivo)
+        document.getElementById('historialWrap').innerHTML = renderHistorial()
+
+        toast(`Archivo ${formato.toUpperCase()} descargado`, 'ok')
+    } catch(e) {
+        toast('Error al generar el archivo', 'err')
+    } finally {
+        btn.classList.remove('loading')
+        const subs = { xlsx: 'Plantilla ControlAnime con estilos', json: 'Para importar en otras apps' }
+        btn.querySelector('.export-btn-sub').textContent = subs[formato]
+    }
+}
+
+// ── ARRANCAR ──────────────────────────────────────────
+init()
+</script>
+</body>
+</html>

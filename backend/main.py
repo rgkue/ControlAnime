@@ -16,7 +16,6 @@ Pool de conexiones:
 """
 
 from contextlib import asynccontextmanager
-
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -24,6 +23,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 # Routers
 from backend.routers import auth, lista, animes, ranking
+from backend.routers import exportar
+from backend.routers import estadisticas
 
 # Middlewares propios
 from backend.middleware import AuthMiddleware, CSRFMiddleware, SecurityHeadersMiddleware
@@ -107,7 +108,8 @@ app.include_router(auth.router)
 app.include_router(lista.router)
 app.include_router(animes.router)
 app.include_router(ranking.router)
-
+app.include_router(estadisticas.router)
+app.include_router(exportar.router)
 
 # ── Rutas de páginas HTML ─────────────────────────────────────────────────────
 
@@ -171,7 +173,13 @@ async def usuario_page(id: str):
 async def configuracion_page():
     return FileResponse("frontend/pages/configuracion/index.html")
 
+@app.get("/estadisticas")
+async def estadisticas_page():
+    return FileResponse("frontend/pages/estadisticas/index.html")
 
+@app.get("/exportar")
+async def exportar_page():
+    return FileResponse("frontend/pages/exportar/index.html")
 
 # ── Handlers de error ─────────────────────────────────────────────────────────
 
