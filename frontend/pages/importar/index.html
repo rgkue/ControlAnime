@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Importar · ControlAnime</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="icon" type="image/x-icon" href="/static/logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg:           #090909;
+    --surface:      #111111;
+    --surface2:     #181818;
+    --surface3:     #1e1e1e;
+    --border:       #222222;
+    --border2:      #2a2a2a;
+    --accent:       #f97316;
+    --accent-dim:   rgba(249,115,22,0.12);
+    --text:         #e8e8e8;
+    --muted:        #666;
+    --muted2:       #888;
+    --green:        #4ade80;
+    --green-dim:    rgba(74,222,128,0.1);
+    --blue:         #60a5fa;
+    --blue-dim:     rgba(96,165,250,0.1);
+    --red:          #f87171;
+    --red-dim:      rgba(248,113,113,0.1);
+    --sidebar-w:    240px;
+    --sidebar-collapsed: 64px;
+    --topbar-h:     58px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'DM Sans', sans-serif; font-size: 14px; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; }
+
+/* ── SIDEBAR ── */
+.sidebar { width: var(--sidebar-w); background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; transition: width 0.25s; overflow: hidden; flex-shrink: 0; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; }
+.sidebar.collapsed { width: var(--sidebar-collapsed); }
+.sidebar-header { display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid var(--border); height: var(--topbar-h); overflow: hidden; flex-shrink: 0; }
+.logo { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.06em; color: var(--text); text-decoration: none; white-space: nowrap; transition: opacity 0.25s; }
+.logo span { color: var(--accent); }
+.sidebar.collapsed .logo { opacity: 0; pointer-events: none; width: 0; }
+.collapse-btn { background: none; border: none; color: var(--muted); cursor: pointer; padding: 6px; border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: color 0.25s, background 0.25s, transform 0.25s; flex-shrink: 0; }
+.collapse-btn:hover { color: var(--accent); background: var(--accent-dim); }
+.sidebar.collapsed .collapse-btn { transform: rotate(180deg); }
+.sidebar-nav { flex: 1; padding: 12px 8px; display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
+.nav-item { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 6px; color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 400; white-space: nowrap; transition: color 0.25s, background 0.25s; cursor: pointer; border: none; background: none; width: 100%; }
+.nav-item:hover { color: var(--text); background: var(--surface2); }
+.nav-item.active { color: var(--accent); background: var(--accent-dim); }
+.nav-item.logout:hover { color: var(--red); background: var(--red-dim); }
+.nav-icon { width: 18px; height: 18px; flex-shrink: 0; }
+.nav-label { transition: opacity 0.25s, width 0.25s; overflow: hidden; }
+.sidebar.collapsed .nav-label { opacity: 0; width: 0; }
+.sidebar-footer { padding: 8px 8px 16px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 2px; }
+
+/* ── MAIN ── */
+.main { margin-left: var(--sidebar-w); flex: 1; min-height: 100vh; display: flex; flex-direction: column; transition: margin-left 0.25s; }
+.sidebar.collapsed ~ .main { margin-left: var(--sidebar-collapsed); }
+
+/* ── TOPBAR ── */
+.topbar { position: sticky; top: 0; z-index: 40; height: var(--topbar-h); background: rgba(9,9,9,0.9); backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 36px; gap: 12px; flex-shrink: 0; }
+.topbar-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: 0.1em; color: var(--text); }
+.topbar-user { margin-left: auto; display: flex; align-items: center; }
+.user-chip { display: flex; align-items: center; gap: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 40px; padding: 6px 6px 6px 14px; cursor: pointer; transition: border-color 0.2s; }
+.user-chip:hover { border-color: var(--accent); }
+.topbar-email { font-size: 0.75rem; color: var(--muted); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.topbar-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--accent); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 600; color: #000; flex-shrink: 0; }
+.topbar-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+/* ── PAGE ── */
+.page-body { padding: 28px 36px 60px; width: 100%; max-width: 860px; }
+
+/* ── UPLOAD ZONE ── */
+.upload-zone {
+    border: 2px dashed var(--border2);
+    border-radius: 14px; padding: 48px 32px;
+    text-align: center; cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    background: var(--surface2);
+    position: relative;
+}
+.upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+}
+.upload-zone input[type=file] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+.upload-icon { width: 48px; height: 48px; margin: 0 auto 16px; color: var(--muted); }
+.upload-title { font-size: 1rem; font-weight: 600; margin-bottom: 6px; }
+.upload-sub { font-size: 0.8rem; color: var(--muted); line-height: 1.5; }
+.upload-formatos { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 16px; }
+.formato-chip { padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border2); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; }
+.fmt-json  { color: var(--accent); border-color: rgba(249,115,22,0.3); background: rgba(249,115,22,0.06); }
+.fmt-xlsx  { color: var(--green);  border-color: rgba(74,222,128,0.3);  background: rgba(74,222,128,0.06); }
+.fmt-csv   { color: var(--blue);   border-color: rgba(96,165,250,0.3);  background: rgba(96,165,250,0.06); }
+.fmt-txt   { color: var(--muted2); border-color: var(--border2);        background: transparent; }
+.fmt-xml   { color: #c084fc;       border-color: rgba(192,132,252,0.3); background: rgba(192,132,252,0.06); }
+
+/* ── PROGRESS ── */
+.progress-block { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+.progress-title { font-size: 0.88rem; font-weight: 600; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+.progress-bar-wrap { height: 6px; background: var(--border2); border-radius: 6px; overflow: hidden; margin-bottom: 8px; }
+.progress-bar { height: 100%; background: var(--accent); border-radius: 6px; transition: width 0.4s ease; width: 0%; }
+.progress-sub { font-size: 0.75rem; color: var(--muted); }
+
+/* ── SECCIÓN ── */
+.section-block { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; margin-bottom: 16px; }
+.section-title { font-family: 'Bebas Neue', sans-serif; font-size: 0.88rem; letter-spacing: 0.12em; color: var(--text); margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+.section-title::before { content: ''; width: 3px; height: 16px; background: var(--accent); border-radius: 2px; flex-shrink: 0; }
+.badge-count { font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 600; padding: 2px 8px; border-radius: 10px; }
+.badge-green { background: var(--green-dim); color: var(--green); }
+.badge-red   { background: var(--red-dim);   color: var(--red); }
+.badge-muted { background: var(--surface3);  color: var(--muted2); border: 1px solid var(--border2); }
+
+/* ── TIPO SELECTOR ── */
+.tipo-sel { display: inline-flex; border: 1px solid var(--border2); border-radius: 6px; overflow: hidden; }
+.tipo-sel button { padding: 4px 12px; font-size: 0.72rem; font-weight: 600; font-family: inherit; cursor: pointer; border: none; background: var(--surface3); color: var(--muted2); transition: all 0.15s; }
+.tipo-sel button:hover { background: var(--surface2); color: var(--text); }
+.tipo-sel button.active { background: var(--accent); color: #000; }
+
+/* ── TABLA DE PREVIEW ── */
+.preview-table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
+.preview-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+.preview-table th { background: var(--surface3); color: var(--muted); font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 10px 12px; text-align: left; white-space: nowrap; border-bottom: 1px solid var(--border2); }
+.preview-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.preview-table tr:last-child td { border-bottom: none; }
+.preview-table tr:hover td { background: var(--surface3); }
+.td-poster { width: 32px; }
+.td-poster img { width: 28px; height: 40px; border-radius: 3px; object-fit: cover; display: block; }
+.td-poster .no-poster { width: 28px; height: 40px; border-radius: 3px; background: var(--border2); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: var(--muted); }
+.td-titulo-orig { color: var(--muted2); font-size: 0.74rem; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.td-titulo-db { font-weight: 500; max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.td-rating { color: var(--accent); font-weight: 500; white-space: nowrap; }
+.td-no-match { color: var(--red); font-size: 0.76rem; font-style: italic; }
+
+.tipo-badge { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 4px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.tipo-visto     { background: var(--green-dim); color: var(--green); border: 1px solid rgba(74,222,128,0.2); }
+.tipo-pendiente { background: var(--blue-dim);  color: var(--blue);  border: 1px solid rgba(96,165,250,0.2); }
+.tipo-favorito  { background: rgba(244,114,182,0.1); color: #f472b6; border: 1px solid rgba(244,114,182,0.2); }
+
+/* ── BOTONES ── */
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 8px; font-size: 0.84rem; font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; font-family: inherit; }
+.btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+.btn-primary  { background: var(--accent); color: #000; }
+.btn-primary:hover { background: #ea6a0a; }
+.btn-secondary { background: var(--surface2); color: var(--muted2); border: 1px solid var(--border2); }
+.btn-secondary:hover { color: var(--text); border-color: var(--muted); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 18px; }
+
+/* ── RESULTADO FINAL ── */
+.result-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+.result-card { padding: 20px; border-radius: 10px; text-align: center; }
+.result-card.ok  { background: var(--green-dim); border: 1px solid rgba(74,222,128,0.2); }
+.result-card.err { background: var(--red-dim);   border: 1px solid rgba(248,113,113,0.2); }
+.result-card-val { font-family: 'Bebas Neue', sans-serif; font-size: 2.4rem; line-height: 1; }
+.result-card.ok  .result-card-val { color: var(--green); }
+.result-card.err .result-card-val { color: var(--red); }
+.result-card-label { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+
+/* ── TOAST ── */
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(16px); background: var(--surface2); border: 1px solid var(--border2); border-radius: 8px; padding: 10px 18px; font-size: 0.82rem; font-weight: 500; opacity: 0; transition: all 0.22s; z-index: 999; white-space: nowrap; box-shadow: 0 8px 32px rgba(0,0,0,0.5); pointer-events: none; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.ok  { border-color: var(--green); color: var(--green); }
+.toast.err { border-color: var(--red);   color: var(--red); }
+
+/* ── LOADER ── */
+.loader { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 0; gap: 14px; color: var(--muted); }
+.spinner { width: 26px; height: 26px; border: 2.5px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+.fade-in { animation: fadeUp 0.3s ease forwards; }
+
+/* ── GUÍA DE FORMATOS ── */
+.formatos-info { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; margin-top: 4px; }
+.formato-info-card { background: var(--surface3); border: 1px solid var(--border2); border-radius: 8px; padding: 14px; }
+.formato-info-name { font-size: 0.8rem; font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 7px; }
+.formato-info-desc { font-size: 0.74rem; color: var(--muted); line-height: 1.5; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 860px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; }
+    .page-body { padding: 20px 16px 48px; max-width: none; }
+    .topbar { padding: 0 16px; }
+    .topbar-email { display: none; }
+    .result-cards { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <a class="logo" href="/dashboard"><span>CONTROL</span>ANIME</a>
+        <button class="collapse-btn" id="collapseBtn" title="Colapsar">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+    </div>
+    <div class="sidebar-nav">
+        <a class="nav-item" href="/dashboard"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span class="nav-label">Inicio</span></a>
+        <a class="nav-item" href="/mi-lista"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span class="nav-label">Mi lista</span></a>
+        <a class="nav-item" href="/mi-top"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span class="nav-label">Mi Top 5</span></a>
+        <a class="nav-item" href="/populares"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg><span class="nav-label">Tendencias</span></a>
+        <a class="nav-item" href="/emision"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg><span class="nav-label">En emisión</span></a>
+        <a class="nav-item" href="/ranking"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 20 18 10"/><polyline points="12 20 12 4"/><polyline points="6 20 6 14"/></svg><span class="nav-label">Ranking</span></a>
+        <a class="nav-item" href="/estadisticas"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg><span class="nav-label">Estadísticas</span></a>
+        <a class="nav-item" href="/exportar"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span class="nav-label">Exportar</span></a>
+        <a class="nav-item active" href="/importar"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/><line x1="12" y1="15" x2="12" y2="3" transform="rotate(180 12 12)"/></svg><span class="nav-label">Importar</span></a>
+    </div>
+    <div class="sidebar-footer">
+        <a class="nav-item" href="/configuracion"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span class="nav-label">Configuración</span></a>
+        <a class="nav-item logout" href="#" onclick="event.preventDefault();fetch('/logout',{method:'POST'}).finally(()=>location.href='/login')"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span class="nav-label">Cerrar sesión</span></a>
+    </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+    <div class="topbar">
+        <span class="topbar-title">IMPORTAR LISTA</span>
+        <div class="topbar-user">
+            <div class="user-chip" onclick="location.href='/configuracion'" title="Configuración">
+                <span class="topbar-email" id="topbarEmail"></span>
+                <div class="topbar-avatar" id="topbarAvatar"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-body">
+        <div id="step-upload">
+            <!-- ZONA DE UPLOAD -->
+            <div class="upload-zone" id="uploadZone">
+                <input type="file" id="fileInput"
+                    accept=".json,.csv,.xlsx,.xls,.txt,.xml"
+                    onchange="handleFile(this.files[0])">
+                <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <div class="upload-title">Arrastra tu archivo o haz clic para seleccionar</div>
+                <div class="upload-sub">Soportamos listas de MyAnimeList, AniList, y el export propio de ControlAnime</div>
+                <div class="upload-formatos">
+                    <span class="formato-chip fmt-json">JSON</span>
+                    <span class="formato-chip fmt-xlsx">XLSX</span>
+                    <span class="formato-chip fmt-csv">CSV</span>
+                    <span class="formato-chip fmt-txt">TXT</span>
+                    <span class="formato-chip fmt-xml">XML MAL</span>
+                </div>
+            </div>
+
+            <!-- GUÍA DE FORMATOS -->
+            <div class="section-block" style="margin-top:20px">
+                <div class="section-title">Formatos soportados</div>
+                <div class="formatos-info">
+                    <div class="formato-info-card">
+                        <div class="formato-info-name">
+                            <span class="formato-chip fmt-json" style="padding:2px 8px;font-size:0.65rem">JSON</span>
+                            Export de ControlAnime
+                        </div>
+                        <div class="formato-info-desc">El archivo que exportas desde la sección Exportar. Importación perfecta con categorías y episodios.</div>
+                    </div>
+                    <div class="formato-info-card">
+                        <div class="formato-info-name">
+                            <span class="formato-chip fmt-xml" style="padding:2px 8px;font-size:0.65rem">XML</span>
+                            MyAnimeList
+                        </div>
+                        <div class="formato-info-desc">Ve a MAL → Perfil → Export → "Export Anime List". El sistema detecta automáticamente Completed, Watching, Plan to Watch.</div>
+                    </div>
+                    <div class="formato-info-card">
+                        <div class="formato-info-name">
+                            <span class="formato-chip fmt-xlsx" style="padding:2px 8px;font-size:0.65rem">XLSX</span>
+                            Excel / CSV
+                        </div>
+                        <div class="formato-info-desc">Cualquier hoja con una columna "Titulo" o "Title". Opcionalmente "Status" y "Episodes Watched".</div>
+                    </div>
+                    <div class="formato-info-card">
+                        <div class="formato-info-name">
+                            <span class="formato-chip fmt-txt" style="padding:2px 8px;font-size:0.65rem">TXT</span>
+                            Texto plano
+                        </div>
+                        <div class="formato-info-desc">Un título por línea. Se importarán todos como "Visto". Útil para listas simples copiadas de notas.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PASO 2: PROCESANDO -->
+        <div id="step-processing" style="display:none">
+            <div class="progress-block">
+                <div class="progress-title">
+                    <div class="spinner"></div>
+                    Analizando archivo…
+                </div>
+                <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar" style="width:60%"></div></div>
+                <div class="progress-sub" id="progressSub">Buscando animes en la base de datos…</div>
+            </div>
+        </div>
+
+        <!-- PASO 3: PREVIEW -->
+        <div id="step-preview" style="display:none" class="fade-in">
+            <div id="previewContent"></div>
+        </div>
+
+        <!-- PASO 4: RESULTADO -->
+        <div id="step-result" style="display:none" class="fade-in">
+            <div id="resultContent"></div>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Estado ────────────────────────────────────────────
+let parseData = null   // resultado del parse
+
+function esc(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+}
+
+let toastTimer
+function toast(msg, tipo = 'ok') {
+    const el = document.getElementById('toast')
+    el.textContent = msg
+    el.className = `toast show ${tipo}`
+    clearTimeout(toastTimer)
+    toastTimer = setTimeout(() => el.classList.remove('show'), 3500)
+}
+
+function showStep(step) {
+    ['upload','processing','preview','result'].forEach(s => {
+        document.getElementById(`step-${s}`).style.display = s === step ? 'block' : 'none'
+    })
+}
+
+// ── INIT ──────────────────────────────────────────────
+async function init() {
+    const sidebar = document.getElementById('sidebar')
+    const btn     = document.getElementById('collapseBtn')
+    if (localStorage.getItem('sidebarCollapsed') === 'true') sidebar.classList.add('collapsed')
+    btn.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed')
+        localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'))
+    })
+
+    try {
+        const res = await fetch('/me')
+        if (res.status === 401) { location.href = '/login'; return }
+        const me = await res.json()
+        document.getElementById('topbarEmail').textContent = me.email || ''
+        const av = document.getElementById('topbarAvatar')
+        if (me.foto_perfil) av.innerHTML = `<img src="${me.foto_perfil}" alt="avatar">`
+        else av.textContent = (me.email || '?').slice(0, 2).toUpperCase()
+    } catch(e) { location.href = '/login'; return }
+
+    // Drag & drop
+    const zone = document.getElementById('uploadZone')
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over') })
+    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'))
+    zone.addEventListener('drop', e => {
+        e.preventDefault()
+        zone.classList.remove('drag-over')
+        const file = e.dataTransfer.files[0]
+        if (file) handleFile(file)
+    })
+}
+
+// ── HANDLE FILE ───────────────────────────────────────
+async function handleFile(file) {
+    if (!file) return
+    if (file.size > 5 * 1024 * 1024) { toast('Archivo demasiado grande (máx. 5MB)', 'err'); return }
+
+    showStep('processing')
+    document.getElementById('progressSub').textContent = `Leyendo ${file.name}…`
+
+    const formData = new FormData()
+    formData.append('archivo', file)
+
+    // Simular progreso visual
+    const bar = document.getElementById('progressBar')
+    bar.style.width = '30%'
+    setTimeout(() => bar.style.width = '65%', 400)
+
+    try {
+        const res  = await fetch('/importar/parse', { method: 'POST', body: formData })
+        const data = await res.json()
+
+        bar.style.width = '100%'
+
+        if (!res.ok) {
+            showStep('upload')
+            toast(data.error || 'Error al procesar el archivo', 'err')
+            return
+        }
+
+        parseData = data
+        setTimeout(() => renderPreview(data), 300)
+    } catch(e) {
+        showStep('upload')
+        toast('Error de conexión', 'err')
+    }
+}
+
+// ── RENDER PREVIEW ────────────────────────────────────
+function renderPreview(data) {
+    const { formato, total_parseados, encontrados, no_encontrados } = data
+    const fmtLabel = { json: 'JSON', csv: 'CSV', xlsx: 'Excel', txt: 'Texto plano', xml: 'XML (MAL)' }[formato] || formato.toUpperCase()
+
+    const tipoClases = { visto: 'tipo-visto', pendiente: 'tipo-pendiente', favorito: 'tipo-favorito' }
+    const tipoLabels = { visto: 'Visto', pendiente: 'Pendiente', favorito: 'Favorito' }
+
+    // Tabla encontrados
+    const rowsFound = encontrados.map((a, idx) => `
+    <tr>
+        <td class="td-poster">
+            ${a.poster_url
+                ? `<img src="${esc(a.poster_url)}" alt="" loading="lazy">`
+                : `<div class="no-poster">?</div>`}
+        </td>
+        <td>
+            <div class="td-titulo-db">${esc(a.titulo_db)}</div>
+            ${a.titulo_original !== a.titulo_db
+                ? `<div class="td-titulo-orig">${esc(a.titulo_original)}</div>`
+                : ''}
+        </td>
+        <td class="td-rating">${a.rating ? `★ ${a.rating}` : '—'}</td>
+        <td>
+            <div class="tipo-sel" id="tipoSel_${idx}">
+                ${['visto','pendiente','favorito'].map(t => `
+                <button onclick="cambiarTipo(${idx},'${t}')"
+                    class="${a.tipo === t ? 'active' : ''}">${tipoLabels[t]}</button>`).join('')}
+            </div>
+        </td>
+    </tr>`).join('')
+
+    // Tabla no encontrados
+    const rowsNotFound = no_encontrados.map(a => `
+    <tr>
+        <td class="td-poster"><div class="no-poster">?</div></td>
+        <td><div class="td-no-match">${esc(a.titulo_original)}</div></td>
+        <td>—</td>
+        <td><span style="font-size:0.72rem;color:var(--muted)">No en base de datos</span></td>
+    </tr>`).join('')
+
+    const html = `
+    <div>
+        <!-- Resumen -->
+        <div class="section-block" style="margin-bottom:16px">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                <span style="font-size:0.8rem;color:var(--muted2)">Archivo detectado:</span>
+                <span class="formato-chip fmt-${formato}" style="padding:3px 10px">${fmtLabel}</span>
+                <span style="font-size:0.8rem;color:var(--muted2)">${total_parseados} títulos leídos</span>
+                <span class="badge-count badge-green">${encontrados.length} encontrados</span>
+                ${no_encontrados.length ? `<span class="badge-count badge-red">${no_encontrados.length} no encontrados</span>` : ''}
+            </div>
+        </div>
+
+        <!-- Encontrados -->
+        ${encontrados.length ? `
+        <div class="section-block">
+            <div class="section-title">
+                Animes encontrados
+                <span class="badge-count badge-green">${encontrados.length}</span>
+            </div>
+            <p style="font-size:0.76rem;color:var(--muted);margin-bottom:14px">
+                Revisa las categorías antes de importar. Puedes cambiar cada una individualmente.
+            </p>
+            <div class="preview-table-wrap">
+                <table class="preview-table">
+                    <thead><tr><th></th><th>Anime</th><th>Rating</th><th>Categoría</th></tr></thead>
+                    <tbody>${rowsFound}</tbody>
+                </table>
+            </div>
+        </div>` : ''}
+
+        <!-- No encontrados -->
+        ${no_encontrados.length ? `
+        <div class="section-block">
+            <div class="section-title">
+                No encontrados
+                <span class="badge-count badge-red">${no_encontrados.length}</span>
+            </div>
+            <p style="font-size:0.76rem;color:var(--muted);margin-bottom:14px">
+                Estos títulos no se encontraron en la base de datos de ControlAnime. No se importarán.
+            </p>
+            <div class="preview-table-wrap">
+                <table class="preview-table">
+                    <thead><tr><th></th><th>Título original</th><th></th><th></th></tr></thead>
+                    <tbody>${rowsNotFound}</tbody>
+                </table>
+            </div>
+        </div>` : ''}
+
+        <!-- Acciones -->
+        <div class="btn-row">
+            ${encontrados.length ? `
+            <button class="btn btn-primary" onclick="confirmarImport()" id="btnConfirmar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Importar ${encontrados.length} anime${encontrados.length !== 1 ? 's' : ''}
+            </button>` : ''}
+            <button class="btn btn-secondary" onclick="resetear()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.38"/>
+                </svg>
+                Subir otro archivo
+            </button>
+        </div>
+    </div>`
+
+    document.getElementById('previewContent').innerHTML = html
+    showStep('preview')
+}
+
+// ── CAMBIAR TIPO ──────────────────────────────────────
+function cambiarTipo(idx, tipo) {
+    if (!parseData) return
+    parseData.encontrados[idx].tipo = tipo
+    // Actualizar botones visualmente
+    const sel = document.getElementById(`tipoSel_${idx}`)
+    if (!sel) return
+    sel.querySelectorAll('button').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.toLowerCase().trim() === { visto: 'visto', pendiente: 'pendiente', favorito: 'favorito' }[tipo])
+    })
+}
+
+// ── CONFIRMAR IMPORT ──────────────────────────────────
+async function confirmarImport() {
+    if (!parseData?.encontrados?.length) return
+
+    const btn = document.getElementById('btnConfirmar')
+    btn.disabled = true
+    btn.innerHTML = `<div class="spinner" style="width:15px;height:15px;border-width:2px"></div> Importando…`
+
+    const animes = parseData.encontrados.map(a => ({
+        anime_id:         a.anime_id,
+        tipo:             a.tipo,
+        episodios_vistos: a.episodios_vistos || null,
+    }))
+
+    try {
+        const res  = await fetch('/importar/confirmar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ animes }),
+        })
+        const data = await res.json()
+
+        if (!res.ok) {
+            toast(data.error || 'Error al importar', 'err')
+            btn.disabled = false
+            btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Importar`
+            return
+        }
+
+        renderResultado(data)
+    } catch(e) {
+        toast('Error de conexión', 'err')
+        btn.disabled = false
+    }
+}
+
+// ── RENDER RESULTADO ──────────────────────────────────
+function renderResultado(data) {
+    const html = `
+    <div class="fade-in">
+        <div class="result-cards">
+            <div class="result-card ok">
+                <div class="result-card-val">${data.importados}</div>
+                <div class="result-card-label">Importados</div>
+            </div>
+            <div class="result-card ${data.errores > 0 ? 'err' : 'ok'}">
+                <div class="result-card-val">${data.errores}</div>
+                <div class="result-card-label">Errores</div>
+            </div>
+        </div>
+        <p style="font-size:0.84rem;color:var(--muted2);margin-bottom:20px;text-align:center">
+            ${data.importados > 0
+                ? `Tu lista se actualizó correctamente. Los animes duplicados fueron actualizados.`
+                : 'No se importó ningún anime.'}
+        </p>
+        <div class="btn-row" style="justify-content:center">
+            <a href="/mi-lista" class="btn btn-primary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/></svg>
+                Ver mi lista
+            </a>
+            <button class="btn btn-secondary" onclick="resetear()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.38"/></svg>
+                Importar otro archivo
+            </button>
+        </div>
+    </div>`
+
+    document.getElementById('resultContent').innerHTML = html
+    showStep('result')
+}
+
+// ── RESETEAR ──────────────────────────────────────────
+function resetear() {
+    parseData = null
+    document.getElementById('fileInput').value = ''
+    showStep('upload')
+}
+
+// ── ARRANCAR ──────────────────────────────────────────
+init()
+</script>
+</body>
+</html>

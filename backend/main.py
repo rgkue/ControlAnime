@@ -25,6 +25,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.routers import auth, lista, animes, ranking
 from backend.routers import exportar
 from backend.routers import estadisticas
+from backend.routers import importar
 
 # Middlewares propios
 from backend.middleware import AuthMiddleware, CSRFMiddleware, SecurityHeadersMiddleware
@@ -110,6 +111,7 @@ app.include_router(animes.router)
 app.include_router(ranking.router)
 app.include_router(estadisticas.router)
 app.include_router(exportar.router)
+app.include_router(importar.router)
 
 # ── Rutas de páginas HTML ─────────────────────────────────────────────────────
 
@@ -180,6 +182,10 @@ async def estadisticas_page():
 @app.get("/exportar")
 async def exportar_page():
     return FileResponse("frontend/pages/exportar/index.html")
+
+@app.get("/importar")
+async def importar_page():
+    return FileResponse("frontend/pages/importar/index.html")
 
 # ── Handlers de error ─────────────────────────────────────────────────────────
 
